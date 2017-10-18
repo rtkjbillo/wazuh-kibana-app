@@ -10,32 +10,25 @@ module.exports = function (server, options) {
 	var blueWazuh = colors.blue('wazuh');
 	var wazuh_config = {};
 	var package_info = {};
-    const package_file = '../../package.json';
     var appVersion = "";
     var permissions = {}
     // Read Wazuh App package file
     try {
-        package_info = JSON.parse(fs.readFileSync(path.resolve(__dirname, package_file), 'utf8'));
+        package_info = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf8'));
         appVersion = package_info.version;
     } catch (e) {
         server.log([blueWazuh, 'initialize', 'error'], 'Could not read the Wazuh package file.');
-        server.log([blueWazuh, 'initialize', 'error'], 'Path: ' + package_file);
-        server.log([blueWazuh, 'initialize', 'error'], 'Exception: ' + e);
     };
 	// Read Wazuh App configuration file
     try {
         wazuh_config = JSON.parse(fs.readFileSync(path.resolve(__dirname, wazuh_config_file), 'utf8'));
     } catch (e) {
         server.log([blueWazuh, 'initialize', 'error'], 'Could not read the Wazuh configuration file.');
-        server.log([blueWazuh, 'initialize', 'error'], 'Path: ' + wazuh_config_file);
-        server.log([blueWazuh, 'initialize', 'error'], 'Exception: ' + e);
     };
 
 	// Elastic JS Client
-	const serverConfig = server.config();
-	const elasticsearch = require('elasticsearch');
 	const elasticRequest = server.plugins.elasticsearch.getCluster('data');
-    
+
     //Handlers - Generic
 
     var getConfig = function (callback) {
@@ -52,11 +45,11 @@ module.exports = function (server, options) {
     };
 
     var getAPI_entries = function (req,reply) {
-		elasticRequest.callWithRequest(req, 'search', { index: '.wazuh', type: 'wazuh-configuration'}).then(
-			function (data) {
-				reply(data.hits.hits);
+        elasticRequest.callWithRequest(req, 'search', { index: '.wazuh', type: 'wazuh-configuration', size: '100'}).then(
+            function (data) {
+                reply(data.hits.hits);
             }, function (data, error) {
-				reply(data);
+                reply(data);
             });
     };
 
@@ -203,7 +196,6 @@ module.exports = function (server, options) {
     };
 
     var checkStoredAPI = function (req, reply) {
-        var needle = require('needle');
         needle.defaults({
             open_timeout: wazuh_config.wazuhapi.requests.timeout
         });
@@ -217,7 +209,7 @@ module.exports = function (server, options) {
                 return;
             } else if (wapi_config.error_code > 0) {
                 //Credentials not found
-                reply({ 'statusCode': 200, 'error': '2', 'data': 'no_credentials' });
+                reply({ 'statusCode': 400, 'error': '2', 'data': 'no_credentials' });
                 return;
             }
 
@@ -272,10 +264,10 @@ module.exports = function (server, options) {
 
 
     };
-	
+
 	var getAgentsPermissions = function (req, reply) {
 		try {
-			package_info = JSON.parse(fs.readFileSync(path.resolve(__dirname, package_file), 'utf8'));
+			package_info = JSON.parse(fs.readFileSync(path.resolve(__dirname, wazuh_config_file), 'utf8'));
 			permissions = package_info.agents;
 			reply(permissions);
 		} catch (e) {
@@ -284,7 +276,7 @@ module.exports = function (server, options) {
 			server.log([blueWazuh, 'initialize', 'error'], 'Exception: ' + e);
 			reply({ 'statusCode': 500, 'error': 8, 'message': 'Could not load agents permissions' }).code(500);
 		};
-		
+
 	}
 
     //Handlers - Route request
@@ -354,7 +346,7 @@ module.exports = function (server, options) {
             reply({ 'statusCode': 400, 'error': 7, 'message': 'Missing data' }).code(400);
             return;
         }
-        
+
 		var settings = { 'api_user': req.payload.user, 'api_password': req.payload.password, 'url': req.payload.url, 'api_port': req.payload.port , 'insecure': req.payload.insecure, 'component' : 'API', 'active' : req.payload.active, 'manager' : req.payload.manager, 'extensions' : req.payload.extensions};
 
         elasticRequest.callWithRequest(req, 'index', { index: '.wazuh', type: 'wazuh-configuration', body: settings, refresh: true })
@@ -375,7 +367,7 @@ module.exports = function (server, options) {
                 reply({ 'statusCode': 500, 'error': 8, 'message': 'Could not save data in elasticsearch' }).code(500);
             });
     };
-	
+
 	//Handlers - Get API Settings
 
     var getApiSettings = function (req, reply) {
@@ -543,7 +535,7 @@ module.exports = function (server, options) {
         path: '/api/wazuh-api/pci/{requirement}',
         handler: getPciRequirement
     });
-	
+
 	/*
     * GET /api/wazuh-api/agents/permissions
     * Return the permissions on agents

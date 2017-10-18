@@ -1,7 +1,15 @@
+import 'ui/filters/comma_list';
 import rison from 'rison-node';
 import { FilterBarQueryFilterProvider } from 'ui/filter_bar/query_filter';
 import { UtilsBrushEventProvider } from 'ui/utils/brush_event';
 import { FilterBarClickHandlerProvider } from 'ui/filter_bar/filter_bar_click_handler';
+import { SavedObjectsClientProvider } from 'ui/saved_objects';
+import { StateProvider } from 'ui/state_management/state';
+import { migrateLegacyQuery } from 'ui/utils/migrateLegacyQuery';
+import { VisRequestHandlersRegistryProvider } from 'ui/registry/vis_request_handlers';
+import { VisResponseHandlersRegistryProvider } from 'ui/registry/vis_response_handlers';
+
+
 
 var app = require('ui/modules').get('app/wazuh', [])
   .directive('kbnVis', [function () {
@@ -39,12 +47,9 @@ var app = require('ui/modules').get('app/wazuh', [])
   }]);
 
 
-require('ui/modules').get('app/wazuh', []).controller('VisController', function ($scope, $route, genericReq, timefilter, AppState, appState, $location, kbnUrl, $timeout, courier, Private, Promise, savedVisualizations, SavedVis, getAppState, $rootScope) {
-
-	if(typeof $rootScope.visCounter === "undefined")
-		$rootScope.visCounter = 0;
-
-
+require('ui/modules').get('app/wazuh', []).controller('VisController', function ($scope, config, $route, timefilter, AppState, appState, $location, kbnUrl, $timeout, courier, Private, Promise, savedVisualizations, SavedVis, getAppState, $rootScope) {
+    const State = Private(StateProvider);
+    const savedObjectsClient = Private(SavedObjectsClientProvider);
 
 	// Set filters
 	$scope.filter = {};
@@ -57,18 +62,30 @@ require('ui/modules').get('app/wazuh', []).controller('VisController', function 
 	var visDecoded = rison.decode($scope.visA);
 
 	// Initialize Visualization
-	$scope.newVis = new SavedVis({ 'type': visDecoded.vis.type, 'indexPattern': $scope.visIndexPattern });
+    savedObjectsClient.find({
+        type: 'index-pattern',
+        fields: ['title'],
+        perPage: 10000
+    })
+    .then(({ savedObjects }) => {
+        var indexId = savedObjects.find(index => index.attributes.title === $scope.visIndexPattern).id;
+        $scope.newVis = new SavedVis({ 'type': visDecoded.vis.type, 'indexPattern': indexId });
+        const { vis, searchSource } = $scope.newVis;
+        $scope.newVis.init().then(function () {
+            // Render visualization
+            $scope.savedVis = $scope.newVis;
+            $scope.vis = $scope.savedVis.vis;
+            $scope.vis.editorMode = false;
+            $scope.vis.visualizeScope = true;
+            
+            if (!$scope.appState) $scope.appState = getAppState();
 
-	$scope.newVis.init().then(function () {
-		// Render visualization
-		$rootScope.visCounter++;
-		renderVisualization();
-	},function () {
-		console.log("Error: Could not load visualization: "+visDecoded.vis.title);
-	});
-
+            renderVisualization();
+        },function () {
+            console.log("Error: Could not load visualization: "+visDecoded.vis.title);
+        });
+    });
     function renderVisualization() {
-
 		$scope.loadBeforeShow = false;
 
 		// Decode and set time filter
@@ -102,66 +119,81 @@ require('ui/modules').get('app/wazuh', []).controller('VisController', function 
 		$scope.timefilter = timefilter;
 
 		// Get App State
-		const $state = getAppState();
+        const $state = $scope.state = new AppState({interval:'auto'});
 		//let $state = new AppState();
-
+        $state.query = migrateLegacyQuery($scope.filter.current);
 		// Initialize queryFilter and searchSource
 		$scope.queryFilter = Private(FilterBarQueryFilterProvider);
 		$scope.searchSource = $scope.newVis.searchSource;
 		courier.setRootSearchSource($scope.searchSource);
 		const brushEvent = Private(UtilsBrushEventProvider);
 		const filterBarClickHandler = Private(FilterBarClickHandlerProvider);
-		$timeout(
-		function() {
+        
+        $scope.vis = $scope.savedVis.vis;
+        // Bind visualization, index pattern and state
+        $scope.indexPattern = $scope.vis.indexPattern;
+        $scope.state = $state;
+
+        // Build visualization
+        visState.aggs = visDecoded.vis.aggs;
+        visState.title = visDecoded.vis.title;
+        visState.params = visDecoded.vis.params;
+        visState.filter = $scope.visFilter;
+        if($scope.visClickable != "false")
+            visState.listeners = {brush: brushEvent($state), click: filterBarClickHandler($state)};
 
 
-			// Bind visualization, index pattern and state
-			$scope.vis = $scope.newVis.vis;
-			$scope.indexPattern = $scope.vis.indexPattern;
-			$scope.state = $state;
+        // Set Vis states
+        $scope.uiState = $state.makeStateful('uiState');
 
-			// Build visualization
-			visState.aggs = visDecoded.vis.aggs;
-			visState.title = visDecoded.vis.title;
-			visState.params = visDecoded.vis.params;
-			if($scope.visClickable != "false")
-				visState.listeners = {brush: brushEvent($state), click: filterBarClickHandler($state)};
+        // Hide legend if needed
+        if(typeof visDecoded.uiState.vis !== "undefined" && typeof visDecoded.uiState.vis.legendOpen !== "undefined" && !visDecoded.uiState.vis.legendOpen)
+            $scope.uiState.set('vis.legendOpen', false);
+        else
+            $scope.uiState.set('vis.legendOpen', true);
 
+        if($scope.not_aggregable){
+            return;
+        }
 
-			// Set Vis states
-			$scope.uiState = $state.makeStateful('uiState');
-
-			// Hide legend if needed
-			if(typeof visDecoded.uiState.vis !== "undefined" && typeof visDecoded.uiState.vis.legendOpen !== "undefined" && !visDecoded.uiState.vis.legendOpen)
-				$scope.uiState.set('vis.legendOpen', false);
-			else
-				$scope.uiState.set('vis.legendOpen', true);
-
-			if($scope.not_aggregable){
-				$rootScope.visCounter--;
-				return;
-			}
-
-			$scope.vis.setUiState($scope.uiState);
-			$scope.vis.setState(visState);
-			$rootScope.visCounter--;
-			$scope.loadBeforeShow = true;
-
-
-		}, 0);
-
+        $scope.vis.setUiState($scope.uiState);
+        $scope.vis.setState(visState);
+        $scope.loadBeforeShow = true;
 
 		// Fetch visualization
 		$scope.fetch = function ()
 		{
+            const requestHandlers = Private(VisRequestHandlersRegistryProvider);
+            const responseHandlers = Private(VisResponseHandlersRegistryProvider);
+
+            function getHandler(from, name) {
+                if (typeof name === 'function') return name;
+                    return from.find(handler => handler.name === name).handler;
+            }
+
+            const requestHandler = getHandler(requestHandlers, $scope.vis.type.requestHandler);
+            const responseHandler = getHandler(responseHandlers, $scope.vis.type.responseHandler);
+
+            requestHandler($scope.vis, $scope.appState, $scope.uiState, $scope.queryFilter, $scope.savedVis.searchSource)
+            .then(requestHandlerResponse => {
+                return responseHandler($scope.vis, requestHandlerResponse);
+            })
+            .then(resp => {
+                $scope.visData = resp;
+                $scope.$apply();
+                $scope.$broadcast('render');
+                return resp;
+            });
 
 			if($scope.visIndexPattern == "wazuh-alerts-*"){
 				$scope.searchSource.set('filter', $scope.queryFilter.getFilters());
-				$scope.searchSource.set('query', $scope.filter.current);
+				$scope.searchSource.set('query', migrateLegacyQuery($scope.filter.current));
+                $state.query = migrateLegacyQuery($scope.filter.current);
 			}
+
 			if ($scope.vis && $scope.vis.type.requiresSearch) {
 				$state.save();
-				courier.fetch();
+				$scope.vis.forceReload();
 			}
 
 		};

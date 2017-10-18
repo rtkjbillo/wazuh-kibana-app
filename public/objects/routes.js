@@ -23,15 +23,18 @@ var settingsWizard = function ($location, testConnection, appState, $q, genericR
     return deferred.promise;
 }
 
-var goToVisualize = function ($location, $window, appState) {
-	if (!appState.getGoToVisualize()) {
-		appState.setGoToVisualize(true);
-		$location.search('id', null);
-    		$window.location.href=$location.absUrl().replace('/wazuh#', '/kibana#');
-	} else {
-		appState.setGoToVisualize(false);
-		$location.url('/overview/');
-	}
+var goToKibana = function ($location, $window) {
+    var url = '';
+    url = url + $location.$$absUrl.substring(0, $location.$$absUrl.indexOf('#'));
+    
+    if(sessionStorage.getItem('lastSubUrl:' + url).includes('/wazuh#/visualize') || 
+        sessionStorage.getItem('lastSubUrl:' + url).includes('/wazuh#/doc') ||
+        sessionStorage.getItem('lastSubUrl:' + url).includes('/wazuh#/context')){
+            
+        sessionStorage.setItem('lastSubUrl:' + url, url);
+        
+    }
+    $window.location.href=$location.absUrl().replace('/wazuh#', '/kibana#');
 }
 
 //Routes
@@ -83,7 +86,21 @@ routes
         redirectTo: function() {
         },
         resolve: {
-            "check": goToVisualize
+            "check": goToKibana
+        }
+    })
+    .when('/context/:pattern?/:type?/:id?', {
+        redirectTo: function() {
+        },
+        resolve: {
+            "check": goToKibana
+        }
+    })
+    .when('/doc/:pattern?/:index?/:type?/:id?', {
+        redirectTo: function() {
+        },
+        resolve: {
+            "check": goToKibana
         }
     })
     .when('/', {
@@ -94,4 +111,4 @@ routes
     })
     .otherwise({
         redirectTo: '/overview/'
-    }); 
+    });
