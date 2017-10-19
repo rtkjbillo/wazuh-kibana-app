@@ -9,11 +9,11 @@ var settingsWizard = function ($location, testConnection, appState, $q, genericR
     var deferred = $q.defer();
     testConnection.check_stored().then(function (data)
     {
-		appState.setDefaultManager(data.manager);
-		appState.setExtensions(data.extensions);
+		appState.setDefaultManager(data.data.manager);
+		appState.setExtensions(data.data.extensions);
 		deferred.resolve();
 	}, function (data) {
-		if(data.error == 2)
+		if(data.data.error == 2)
 			notify.warning("Wazuh App: Please set up Wazuh API credentials.");
 		else
 			notify.error("Could not connect with Wazuh RESTful API.");

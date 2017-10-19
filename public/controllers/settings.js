@@ -42,6 +42,7 @@ app.controller('settingsController', function ($scope, $http, testConnection, ap
 	
 	// Remove API entry
 	$scope.removeManager = function(item) {
+        console.log($scope.apiEntries);
 		var index = $scope.apiEntries.indexOf(item);
 		if($scope.apiEntries[index]._source.active == "true" && $scope.apiEntries.length != 1){
 			notify.error("Please set another default manager before removing this one");
@@ -73,7 +74,7 @@ app.controller('settingsController', function ($scope, $http, testConnection, ap
     // Get settings function
     $scope.getSettings = function () {
 			genericReq.request('GET', '/api/wazuh-api/apiEntries').then(function (data, status) {
-				$scope.apiEntries = data;
+				$scope.apiEntries = data.data;
 				angular.forEach($scope.apiEntries, function (value, key) {
 					if(value._source.active == "true"){
 						$scope.currentDefault = key;
@@ -111,8 +112,7 @@ app.controller('settingsController', function ($scope, $http, testConnection, ap
 
         testConnection.check(tmpData).then(function (data) {
 			// API Check correct, get Manager name
-			tmpData.manager = data;
-            
+			tmpData.manager = data.data;
             if(activeStatus){
                 appState.setDefaultManager(tmpData.manager);
             }
@@ -120,7 +120,7 @@ app.controller('settingsController', function ($scope, $http, testConnection, ap
 			tmpData.extensions = {"oscap": true, "audit": true, "pci": true};
 			// Insert new API entry
 			genericReq.request('PUT', '/api/wazuh-api/settings', tmpData).then(function (data) {
-				var newEntry = {'_id': data.response._id, _source: { manager: tmpData.manager, active: tmpData.active, url: tmpData.url, api_user: tmpData.user, api_port: tmpData.port } }; 
+				var newEntry = {'_id': data.data.response._id, _source: { manager: tmpData.manager, active: tmpData.active, url: tmpData.url, api_user: tmpData.user, api_port: tmpData.port } }; 
 				$scope.apiEntries.push(newEntry);
 				notify.info('Wazuh API successfully added');
 				$scope.addManagerContainer = false;
@@ -156,7 +156,7 @@ app.controller('settingsController', function ($scope, $http, testConnection, ap
 		};
 
         testConnection.check(tmpData).then(function (data) {
-            tmpData.manager = data;
+            tmpData.manager = data.data;
             var index = $scope.apiEntries.indexOf(item);
             genericReq.request('PUT', '/api/wazuh-api/updateApiHostname/' + $scope.apiEntries[index]._id, {"manager":tmpData.manager}).then(function (data) {
 				$scope.apiEntries[index]._source.manager = tmpData.manager;
@@ -215,12 +215,12 @@ app.controller('settingsController', function ($scope, $http, testConnection, ap
     };
 	
 	$scope.getAppInfo = function () {
-		$http.get("/api/wazuh-elastic/setup").success(function (data, status) {
+		$http.get("/api/wazuh-elastic/setup").then(function (data, status) {
 			$scope.appInfo = {};
 			$scope.appInfo["app-version"] = data.data["app-version"];
 			$scope.appInfo["installationDate"] = data.data["installationDate"];
 			$scope.appInfo["revision"] = data.data["revision"];
-		}).error(function (data, status) {
+		}).catch(function (data, status) {
 			notify.error("Error when loading Wazuh setup info");
 		})
 	}

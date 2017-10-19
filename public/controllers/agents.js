@@ -103,7 +103,7 @@ app.controller('agentsController', function ($scope, $q, DataFactory, Notifier, 
 
         var deferred = $q.defer();
         genericReq.request('POST', '/api/wazuh-elastic/alerts-count/', payload).then(function (data) {
-            if(data.data != 0)
+            if(data.data.data != 0)
                 deferred.resolve(true);
             else
                 deferred.resolve(false);
@@ -139,7 +139,7 @@ app.controller('agentsController', function ($scope, $q, DataFactory, Notifier, 
 
         DataFactory.get(objectsArray['/agents'])
             .then(function (data) {
-                defered.resolve(data.data.items);
+                defered.resolve(data.data.data.items);
             }, function (data) {
                 printError(data);
                 defered.reject();
@@ -161,7 +161,8 @@ app.controller('agentsController', function ($scope, $q, DataFactory, Notifier, 
             $scope.agentInfo = {};
             // Get Agent Info
             DataFactory.getAndClean('get', '/agents/' + agent.id, {}).then(function (data) {
-                $scope.agentInfo = data.data;
+                console.log(data);
+                $scope.agentInfo = data.data.data;
                 $rootScope.agent = $scope.agentInfo;
                 if(angular.isUndefined($scope.agentInfo.version))
                     $scope.agentInfo.version = "Unknown";
@@ -184,8 +185,8 @@ app.controller('agentsController', function ($scope, $q, DataFactory, Notifier, 
                 if(angular.isUndefined($scope.agentInfo.lastKeepAlive))
                     $scope.agentInfo.lastKeepAlive = "Unknown";
 
-                $scope._agent = data.data;
-                $scope.search = data.data.name;
+                $scope._agent = data.data.data;
+                $scope.search = data.data.data.name;
                 $location.search('id', $scope._agent.id);
                 $scope.presentData($scope._agent.name).then(function (data) {
                     $scope.results = data;
@@ -194,7 +195,7 @@ app.controller('agentsController', function ($scope, $q, DataFactory, Notifier, 
 
                 // Get syscheck info
                 DataFactory.getAndClean('get', '/syscheck/' + agent.id + '/last_scan', {}).then(function (data) {
-                    $scope.agentInfo.syscheck = data.data;
+                    $scope.agentInfo.syscheck = data.data.data;
                     $scope.agentInfo.syscheck.duration = "Unknown";
                     if($scope.agentInfo.syscheck.syscheckEndTime != null && $scope.agentInfo.syscheck.syscheckTime != null){
                         var syscheckTime = new Date($scope.agentInfo.syscheck.syscheckTime);
@@ -210,7 +211,7 @@ app.controller('agentsController', function ($scope, $q, DataFactory, Notifier, 
 
                 // Get rootcheck info
                 DataFactory.getAndClean('get', '/rootcheck/' + agent.id + '/last_scan', {}).then(function (data) {
-                    $scope.agentInfo.rootcheck = data.data;
+                    $scope.agentInfo.rootcheck = data.data.data;
                     $scope.agentInfo.rootcheck.duration = "Unknown";
                     if($scope.agentInfo.rootcheck.rootcheckEndTime != null && $scope.agentInfo.rootcheck.rootcheckTime != null){
                         var rootcheckTime = new Date($scope.agentInfo.rootcheck.rootcheckTime);
@@ -234,7 +235,7 @@ app.controller('agentsController', function ($scope, $q, DataFactory, Notifier, 
 
         DataFactory.getAndClean('put', path, {})
             .then(function (data) {
-                if(data.error == 0)
+                if(data.data.error == 0)
                     notify.info("The agent was successfully restarted");
                 else
                     notify.error("The agent was not restarted");
@@ -252,7 +253,7 @@ app.controller('agentsController', function ($scope, $q, DataFactory, Notifier, 
             var currentTimeFilter = rison.decode($location.search()._g);
             // Check if timefilter has changed and update values
             var gParameter;
-            if($route.current.params._g.startsWith("h@")){
+            if($route.current.params._g && $route.current.params._g.startsWith("h@")){
                 gParameter = sessionStorage.getItem($route.current.params._g);
             }else{
                 gParameter = $route.current.params._g;

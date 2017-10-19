@@ -86,16 +86,14 @@
 										<i class="fa" ng-class="_sort === 'id' ? (_sortOrder ? 'fa-sort-asc' : 'fa-sort-desc') : 'fa-sort'" aria-hidden="true"></i></span>
 									<span flex="25" ng-click="setSort('name')">Name
 										<i class="fa" ng-class="_sort === 'name' ? (_sortOrder ? 'fa-sort-asc' : 'fa-sort-desc') : 'fa-sort'" aria-hidden="true"></i></span>
-									<span flex="15" ng-click="setSort('ip')">IP
+									<span flex="20" ng-click="setSort('ip')">IP
 										<i class="fa" ng-class="_sort === 'ip' ? (_sortOrder ? 'fa-sort-asc' : 'fa-sort-desc') : 'fa-sort'" aria-hidden="true"></i></span>
 									<span flex="15" ng-click="setSort('status')">Status
 										<i class="fa" ng-class="_sort === 'status' ? (_sortOrder ? 'fa-sort-asc' : 'fa-sort-desc') : 'fa-sort'" aria-hidden="true"></i></span>
-									<span flex="10" ng-click="setSort('os.platform')">OS platform
+									<span flex="15" ng-click="setSort('os.platform')">OS platform
 										<i class="fa" ng-class="_sort === 'os' ? (_sortOrder ? 'fa-sort-asc' : 'fa-sort-desc') : 'fa-sort'" aria-hidden="true"></i></span>
-									<span flex="10" ng-click="setSort('os.version')">OS version
+									<span flex="15" ng-click="setSort('os.version')">OS version
 										<i class="fa" ng-class="_sort === 'os' ? (_sortOrder ? 'fa-sort-asc' : 'fa-sort-desc') : 'fa-sort'" aria-hidden="true"></i></span>
-									<span flex="15" ng-click="setSort('version')">Agent version
-										<i class="fa" ng-class="_sort === 'version' ? (_sortOrder ? 'fa-sort-asc' : 'fa-sort-desc') : 'fa-sort'" aria-hidden="true"></i></span>
 								</div>
 							</md-toolbar>
 						</div>
@@ -104,11 +102,10 @@
 						<md-list-item>
 							<span flex="5" ng-click="applyAgent(agent)">{{agent.id}}</span>
 							<span flex="25" ng-click="applyAgent(agent)">{{agent.name}}</span>
-							<span flex="15" ng-click="applyAgent(agent)">{{agent.ip}}</span>
+							<span flex="20" ng-click="applyAgent(agent)">{{agent.ip}}</span>
 							<span flex="15" ng-click="applyAgent(agent)">{{agent.status}}</span>
-							<span flex="10" ng-click="applyAgent(agent)">{{agent.os.platform}}</span>
-							<span flex="10" ng-click="applyAgent(agent)">{{agent.os.version}}</span>
-							<span flex="15" ng-click="applyAgent(agent)">{{agent.version}}</span>
+							<span flex="15" ng-click="applyAgent(agent)">{{agent.os.platform}}</span>
+							<span flex="15" ng-click="applyAgent(agent)">{{agent.os.version}}</span>
 						</md-list-item>
 					</md-list>
 					<md-divider></md-divider>

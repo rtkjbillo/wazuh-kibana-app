@@ -54,7 +54,19 @@ require('ui/modules').get('app/wazuh', []).controller('VisController', function 
 	// Set filters
 	$scope.filter = {};
 	$scope.defaultManagerName = appState.getDefaultManager().name;
-	$scope.filter.raw = $scope.visFilter + " AND manager.name: " + $scope.defaultManagerName;
+        $scope.agent_info = $rootScope.agent;
+        $scope.manager_filter = "manager.name: " + $scope.defaultManagerName;
+
+        if(!angular.isUndefined($rootScope.agent)){
+      	   $scope.agent_filter = "agent.id: " + $scope.agent_info.id;
+           $scope.global_filter = $scope.manager_filter + " AND " + $scope.agent_filter;
+        }else
+           $scope.global_filter = $scope.manager_filter;
+
+        if($scope.visFilter != "")
+           $scope.global_filter = $scope.visFilter + " AND " + $scope.global_filter;
+
+	$scope.filter.raw = $scope.global_filter;
 	$scope.filter.current = $scope.filter.raw;
 
 	// Initialize and decode params
@@ -225,17 +237,25 @@ require('ui/modules').get('app/wazuh', []).controller('VisController', function 
 		 });
 
 		// Watcher
-		var visFilterWatch = $scope.$watch("visFilter", function () {
-			$scope.filter.raw = $scope.visFilter + " AND manager.name: " + $scope.defaultManagerName;
-			$scope.filter.current = $scope.filter.raw;
-			$scope.fetch();
-		});		
-		 
+        var visFilterWatch = $scope.$watch("visFilter", function () {
+            if($rootScope.page == "agents"){
+                $scope.agent_filter = "agent.id: " + $scope.agent_info.id;
+                $scope.global_filter = $scope.manager_filter + " AND " + $scope.agent_filter;
+            }else
+                $scope.global_filter = $scope.manager_filter;
+
+            if($scope.visFilter != "")
+                $scope.global_filter = $scope.visFilter + " AND " + $scope.global_filter;
+            $scope.filter.raw = $scope.global_filter;
+            $scope.filter.current = $scope.filter.raw;
+            $scope.fetch();
+        });
+
 		// Destroy
 		$scope.$on('$destroy', function () {
 			$scope.newVis.destroy();
 		});
-		
+
 		$scope.$on('$destroy', updateQueryWatch);
 		$scope.$on('$destroy', fetchVisualizationWatch);
 		$scope.$on('$destroy', visFilterWatch);

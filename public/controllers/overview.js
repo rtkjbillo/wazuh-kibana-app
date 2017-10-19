@@ -98,7 +98,7 @@ app.controller('overviewController', function ($scope, appState, $window, generi
 		var deferred = $q.defer();
         
         genericReq.request('POST', '/api/wazuh-elastic/alerts-count/', payload).then(function (data) {
-			if(data.data != 0){
+			if(data.data.data != 0){
 				deferred.resolve(true);
             }
 			else
@@ -186,7 +186,7 @@ app.controller('overviewPCIController', function ($scope, $compile, DataFactory,
 
 	var tabs = [];
 	genericReq.request('GET', '/api/wazuh-api/pci/all').then(function (data) {
-		angular.forEach(data, function(value, key) {
+		angular.forEach(data.data, function(value, key) {
 			tabs.push({"title": key, "content": value});
 		});
 		

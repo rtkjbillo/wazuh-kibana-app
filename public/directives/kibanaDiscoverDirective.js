@@ -98,12 +98,25 @@ require('ui/modules').get('app/wazuh', []).controller('discoverW', function($sco
     AppState, timefilter, Promise, Private, kbnUrl, $timeout, $location, savedSearches, appState, $rootScope, getAppState) {
     
     const FieldList = Private(IndexPatternsFieldListProvider);
-
     $scope.defaultManagerName = appState.getDefaultManager().name;
-    $scope.stateQuery = $scope.disFilter;
+    $scope.manager_filter = "manager.name: " + $scope.defaultManagerName;
+
+    if(!angular.isUndefined($rootScope.agent) && $location.path() != "/discover/"){
+        $scope.agent_info = $rootScope.agent;
+
+        $scope.agent_filter = "agent.id: " + $route.current.params.id;
+        $scope.global_filter = $scope.manager_filter + " AND " + $scope.agent_filter;
+    }else
+        $scope.global_filter = $scope.manager_filter;
+
+    if(!angular.isUndefined($scope.disFilter))
+        $scope.global_filter = $scope.disFilter + " AND " + $scope.global_filter;
+
+    $scope.stateQuery = $scope.global_filter;
+
     $scope.chrome = {};
     $scope.removeColumn = function removeColumn(columnName) {
-    $scope.indexPattern.popularizeField(columnName, 1);
+        $scope.indexPattern.popularizeField(columnName, 1);
         columnActions.removeColumn($scope.state.columns, columnName);
     };
     $scope.addColumn = function addColumn(columnName) {
