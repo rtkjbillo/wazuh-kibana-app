@@ -1,18 +1,4 @@
-<md-content flex ng-controller="clusterController" layout="column">
-
-    <md-content class="wazuhMenuNavBar height-70" ng-init="menuNavItem = 'settings'">
-        <menu-top></menu-top>
-    </md-content>
-
-    <md-content class="headBar" layout="row" layout-align="center start">
-        <md-nav-bar flex class="padding-right-0" md-selected-nav-item="submenuNavItem" nav-bar-aria-label="navigation submenu">
-            <md-nav-item md-nav-click="submenuNavItem = 'api'" name="api">API</md-nav-item>
-            <md-nav-item md-nav-click="submenuNavItem = 'extensions'" name="extensions">Extensions</md-nav-item>
-            <md-nav-item md-nav-click="submenuNavItem = 'pattern'" name="pattern">Pattern</md-nav-item>
-            <md-nav-item md-nav-click="submenuNavItem = 'about'" name="about">About</md-nav-item>
-        </md-nav-bar>
-    </md-content>
-
+<md-content flex ng-controller="clusterController" layout="column" ng-if="submenuNavItem == 'monitoring'">
     <div layout="column" layout-align="start stretch">
 
         <div layout="row" layout-align="start stretch">
