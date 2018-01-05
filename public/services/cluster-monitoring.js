@@ -2,64 +2,22 @@ require('ui/modules')
 .get('app/wazuh', [])
 .service('clusterMonitoring', function ($q, apiReq,Notifier) {
     const notifier = new Notifier();
-    const getNodeInfo = async () => {
+
+    const request = async (method,url,params) => {
         try{
-            const data = await apiReq.request('GET','/cluster/node',{});
+            const data = await apiReq.request(method,url,params || {});
             return data;
         } catch (error){
-            return error;
+            throw error;
         }
+    };
 
-    }
-
-    const getAgents = async () => {
-        try{
-            const data = await apiReq.request('GET','/cluster/agents',{});
-            return data;
-        } catch (error){
-            return error;
-        }
-
-    }
-    
-    const getFiles = async () => {
-        try{
-            const data = await apiReq.request('GET','/cluster/files',{});
-            return data;
-        } catch (error){
-            return error;
-        }
-
-    }
-
-    const getNodes = async () => {
-        try{
-            const data = await apiReq.request('GET','/cluster/nodes',{});
-            return data;
-        } catch (error){
-            return error;
-        }
-
-    }
-
-    const getStatus = async () => {
-        try{
-            const data = await apiReq.request('GET','/cluster/status',{});
-            return data;
-        } catch (error){
-            return error;
-        }
-
-    }
-
-    const getConfig = async () => {
-        try{
-            const data = await apiReq.request('GET','/cluster/config',{});
-            return data;
-        } catch (error){
-            return error;
-        }
-    }
+    const getNodeInfo = () => request('GET','/cluster/node',{});
+    const getAgents   = () => request('GET','/cluster/agents',{});
+    const getFiles    = () => request('GET','/cluster/files',{});
+    const getNodes    = () => request('GET','/cluster/nodes',{});
+    const getStatus   = () => request('GET','/cluster/status',{});
+    const getConfig   = () => request('GET','/cluster/config',{});
 
     return {
         getNodeInfo, getAgents, getFiles, getNodes, getStatus, getConfig
