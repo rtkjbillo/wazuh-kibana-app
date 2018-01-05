@@ -1,12 +1,13 @@
 <div flex ng-controller="managerController" layout="column">
 
-    <md-content class="wazuhMenuNavBar height-70" ng-init="menuNavItem = 'manager';">
+    <md-content class="wazuhMenuNavBar height-70" ng-init="menuNavItem = 'manager'">
 		<menu-top></menu-top>
     </md-content>
 
 	<div class="headBar" layout="row"  layout-align="center start">
         <md-nav-bar flex class="pading-right-0" md-selected-nav-item="submenuNavItem" nav-bar-aria-label="navigation submenu">
             <md-nav-item md-nav-click="submenuNavItem = 'status'" name="status">Status</md-nav-item>
+            <md-nav-item ng-if="clusterIsEnabled" md-nav-click="submenuNavItem = 'monitoring'" name="monitoring">Monitoring</md-nav-item>
 			<md-nav-item md-nav-click="submenuNavItem = 'ruleset'" name="ruleset">Ruleset</md-nav-item>
 			<md-nav-item md-nav-click="submenuNavItem = 'configuration'" name="configuration">Configuration</md-nav-item>
             <md-nav-item md-nav-click="submenuNavItem = 'logs'" name="logs">Logs</md-nav-item>
