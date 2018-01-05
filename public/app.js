@@ -27,6 +27,7 @@ require('plugins/wazuh/services/dataHandler.js');
 require('plugins/wazuh/services/appState.js');
 require('plugins/wazuh/services/testAPI.js');
 require('plugins/wazuh/services/implicitFilters.js');
+require('plugins/wazuh/services/cluster-monitoring.js');
 
 // Set up routes and views
 require('plugins/wazuh/services/routes.js');
@@ -46,6 +47,7 @@ require('plugins/wazuh/controllers/manager.js');
 require('plugins/wazuh/controllers/ruleset.js');
 require('plugins/wazuh/controllers/osseclog.js');
 require('plugins/wazuh/controllers/groups.js');
+require('plugins/wazuh/controllers/cluster-monitoring.js');
 
 // Agents
 require('plugins/wazuh/controllers/agents.js');

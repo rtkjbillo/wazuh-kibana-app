@@ -3,7 +3,9 @@ let base64 = require('plugins/wazuh/utils/base64.js');
 import chrome from 'ui/chrome';
 
 // Require App
-let app = require('ui/modules').get('app/wazuh', []).controller('settingsController', function ($scope, $rootScope, $http, $routeParams, $route, $location, Notifier, testAPI, appState, genericReq, courier) {
+let app = require('ui/modules')
+.get('app/wazuh', [])
+.controller('settingsController', function ($scope, $rootScope, $http, $routeParams, $route, $location, Notifier, testAPI, appState, genericReq, courier) {
     $rootScope.page = "settings";
 
     // Initialize

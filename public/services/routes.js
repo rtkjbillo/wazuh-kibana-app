@@ -274,6 +274,12 @@ routes
             "ip": getAllIp
         }
     })
+    .when('/cluster-monitoring/', {
+        template: require('plugins/wazuh/templates/manager/cluster-monitoring.html'),
+        resolve: {
+            "ip": getAllIp
+        }
+    })
     .when('/visualize/create?', {
         redirectTo: function () {},
         resolve: {
