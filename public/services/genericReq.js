@@ -42,13 +42,8 @@ require('ui/modules').get('app/wazuh', []).service('genericReq', function ($q, $
         .catch(error => {
             if(error.status && error.status === -1){
                 defered.reject({data: 'request_timeout_genericreq', url });
-            }else if (error.error && error.error !== '0') {
+            }else {
                 defered.reject(error);
-            } else {
-                defered.reject({
-                    error  : -2,
-                    message: 'Error doing a request to Kibana API.'
-                });
             }
         });
 
