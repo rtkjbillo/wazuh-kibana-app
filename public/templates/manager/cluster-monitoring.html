@@ -4,7 +4,7 @@
         <menu-top></menu-top>
     </md-content>
 
-    <md-content class="headBar" layout="row"  layout-align="center start">
+    <md-content class="headBar" layout="row" layout-align="center start">
         <md-nav-bar flex class="padding-right-0" md-selected-nav-item="submenuNavItem" nav-bar-aria-label="navigation submenu">
             <md-nav-item md-nav-click="submenuNavItem = 'api'" name="api">API</md-nav-item>
             <md-nav-item md-nav-click="submenuNavItem = 'extensions'" name="extensions">Extensions</md-nav-item>
@@ -13,14 +13,36 @@
         </md-nav-bar>
     </md-content>
 
-  <div layout="column" layout-align="start stretch">
+    <div layout="column" layout-align="start stretch">
 
-
-
-
-
-
- 
-  </div>
-
+        <div layout="row" layout-align="start stretch">
+            <md-card flex>
+                <md-card-content>
+                    <md-nav-bar md-selected-nav-item="clusterTab">
+                        <md-nav-item md-nav-click="switchClusterTab('node-info')" name="node-info">
+                            Node
+                        </md-nav-item>
+                        <md-nav-item md-nav-click="switchClusterTab('agents-info')" name="agents-info">
+                            Agents
+                        </md-nav-item>
+                        <md-nav-item md-nav-click="switchClusterTab('files-info')" name="files-info">
+                            Files
+                        </md-nav-item>
+                        <md-nav-item md-nav-click="switchClusterTab('nodes-info')" name="nodes-info">
+                            Nodes
+                        </md-nav-item>
+                        <md-nav-item md-nav-click="switchClusterTab('status-info')" name="status-info">
+                            Status
+                        </md-nav-item>
+                        <md-nav-item md-nav-click="switchClusterTab('config-info')" name="config-info">
+                            Configuration
+                        </md-nav-item>
+                    </md-nav-bar>
+                    <div class="ext-content">
+                        <code>{{dataShown}}</code>
+                    </div>
+                </md-card-content>
+            </md-card>
+        </div>
+    </div>
 </md-content>
