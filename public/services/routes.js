@@ -70,11 +70,13 @@ const settingsWizard = ($rootScope, $location, $q, Notifier, testAPI, appState, 
     const changeCurrentApi = data => {
         // Should change the currentAPI configuration depending on cluster
         if (data.data.data.cluster_info.status === 'disabled'){
+            $rootScope.clusterIsEnabled = false;
             appState.setCurrentAPI(JSON.stringify({
                 name: data.data.data.cluster_info.manager, 
                 id: JSON.parse(appState.getCurrentAPI()).id 
             }));
         } else {
+            $rootScope.clusterIsEnabled = true;
             appState.setCurrentAPI(JSON.stringify({
                 name: data.data.data.cluster_info.cluster, 
                 id: JSON.parse(appState.getCurrentAPI()).id 
@@ -90,6 +92,7 @@ const settingsWizard = ($rootScope, $location, $q, Notifier, testAPI, appState, 
         testAPI.check_stored(JSON.parse(appState.getCurrentAPI()).id)
         .then(data => {
             if (data.data.error || data.data.data.apiIsDown) {
+                $rootScope.clusterIsEnabled = false;
                 checkResponse(data);
             } else { 
                 $rootScope.apiIsDown = null; 
@@ -277,7 +280,8 @@ routes
     .when('/cluster-monitoring/', {
         template: require('plugins/wazuh/templates/manager/cluster-monitoring.html'),
         resolve: {
-            "ip": getAllIp
+            "ip": getAllIp,
+            "checkAPI": settingsWizard
         }
     })
     .when('/visualize/create?', {
