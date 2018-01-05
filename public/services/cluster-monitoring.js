@@ -1,7 +1,7 @@
 require('ui/modules')
 .get('app/wazuh', [])
-.service('clusterMonitoring', function ($q, apiReq,Notifier) {
-    const notifier = new Notifier();
+.service('clusterMonitoring', function (apiReq,Notifier) {
+    const notifier = new Notifier({location: 'Cluster Monitoring'});
 
     const request = async (method,url,params) => {
         try{
