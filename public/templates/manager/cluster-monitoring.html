@@ -45,7 +45,7 @@
                         </md-card>
                     </div>
                     <div layout="row" ng-if="clusterTab==='agents-info'">
-                        <md-card flex ng-repeat="title in dataShown">
+                        <md-card flex ng-repeat="title in dataShown track by $index">
                             <md-card-content>
                                 <h3>{{$index}}</h3>
                                 <div layout="row">
@@ -63,8 +63,8 @@
                                     </div>
                                     <md-divider></md-divider>
                                 </div>
-                                <div style="overflow-y: scroll;  height: 300px;">
-                                    <div layout="row" ng-repeat="agent in title">
+                                <div style="overflow-y: scroll;  height: 300px;" ng-repeat="agent in title track by agent.id">
+                                    <div layout="row">
                                         <div flex>{{agent.id}}</div>
                                         <div flex>{{agent.name}}</div>
                                         <div flex>{{agent.status}}</div>
