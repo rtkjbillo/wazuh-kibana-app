@@ -45,10 +45,12 @@
                         </md-card>
                     </div>
                     <div layout="row" ng-if="clusterTab==='agents-info'">
-                        <md-card flex ng-repeat="title in dataShown track by $index">
+                        <md-card flex>
                             <md-card-content>
-                                <h3>{{$index}}</h3>
                                 <div layout="row">
+                                    <div flex>
+                                        <b>NODE</b>
+                                    </div>
                                     <div flex>
                                         <b>ID</b>
                                     </div>
@@ -63,8 +65,9 @@
                                     </div>
                                     <md-divider></md-divider>
                                 </div>
-                                <div style="overflow-y: scroll;  height: 300px;" ng-repeat="agent in title track by agent.id">
-                                    <div layout="row">
+                                <div style="overflow-y: scroll;  height: 300px;" >
+                                    <div layout="row" ng-repeat="agent in dataShown track by $index">
+                                        <div flex>{{agent.node}}</div>
                                         <div flex>{{agent.id}}</div>
                                         <div flex>{{agent.name}}</div>
                                         <div flex>{{agent.status}}</div>
@@ -180,12 +183,6 @@
                     <div layout="row" ng-if="clusterTab==='config-info'">
                         <md-card flex>
                             <md-card-content>
-                                <h3>Key</h3>
-                                <span class="md-secondary">{{dataShown.key}}</span>
-                            </md-card-content>
-                        </md-card>
-                        <md-card flex>
-                            <md-card-content>
                                 <h3>Nodes</h3>
                                 <span class="md-secondary">{{dataShown.nodes}}</span>
                             </md-card-content>
@@ -193,10 +190,14 @@
 
                     </div>
                     <div layout="row">
-                        <md-card flex>
+                        <md-card flex ng-init="showRaw=false">
                             <md-card-content>
                                 <h3>RAW</h3>
-                                <pre><code>{{dataShown}}</code></pre>
+                                <div flex><a ng-click="showRaw = !showRaw"><i class="fa fa-eye"></i> See full output</a></div>
+                                <div flex ng-show="showRaw">
+                                    <pre flex class="json-beautifier"><code dynamic="raw"></code></pre>
+                                </div>
+                                
                             </md-card-content>
                         </md-card>
                     </div>
