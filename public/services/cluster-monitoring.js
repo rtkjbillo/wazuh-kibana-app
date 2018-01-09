@@ -16,8 +16,18 @@ require('ui/modules')
     const getAgents   = () => request('GET','/cluster/agents',{});
     const getFiles    = () => request('GET','/cluster/files',{});
     const getNodes    = () => request('GET','/cluster/nodes',{});
-    const getStatus   = () => request('GET','/cluster/status',{});
-    const getConfig   = () => request('GET','/cluster/config',{});
+    const getStatus   = node => {
+        if(node){
+            return request('GET','/cluster/status/' + node,{});
+        }
+        return request('GET','/cluster/status',{});
+    }
+    const getConfig   = node => {
+        if(node){
+            return request('GET','/cluster/config/' + node,{});
+        }
+        return request('GET','/cluster/config',{});
+    }
 
     return {
         getNodeInfo, getAgents, getFiles, getNodes, getStatus, getConfig
