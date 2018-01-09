@@ -30,7 +30,7 @@
                                 <i class="fa fa-eye"></i> {{item.node}}</a>
                         </div>
                         <div flex>
-                            <i ng-class="(item.status === 'connected') ? 'fa fa-check-circle-o ownGreen' : 'fa fa-close ownRed'"></i> {{(item.status === 'connected')? ' connected' : ' disconnected'}}
+                            <i ng-class="(item.status === 'connected') ? 'fa fa-circle ownGreen' : 'fa fa-circle ownRed'"></i> {{(item.status === 'connected')? ' connected' : ' disconnected'}}
                         </div>
                         <div flex>{{item.url}}</div>
                     </div>
@@ -44,11 +44,16 @@
             }
 
             .ownGreen {
-                color: green;
+                color: #32CD32;
             }
 
             .ownNavBarCluster {
                 margin-left: 20px;
+            }
+
+            .clusterScrollable {
+                overflow-y: scroll;
+                height: 300px;
             }
         </style>
 
@@ -72,7 +77,7 @@
                         </md-nav-item>
                     </md-nav-bar>
 
-                    <div layout="row" class="ownNavBarCluster" ng-if="clusterTab==='agents-info' && dataShown.length === 0">
+                    <div layout="row" class="ownNavBarCluster" ng-if="!loading && clusterTab==='agents-info' && dataShown.length === 0">
                         <div flex>
                             <p>
                                 <i class="fa fa-meh-o"></i> This node has no agents registered yet.</p>
@@ -94,25 +99,35 @@
 
                     </div>
                     <md-divider ng-if="clusterTab==='agents-info'"></md-divider>
-
-                    <div layout="row" class="ownNavBarCluster" ng-if="dataShown.length > 0 && clusterTab==='agents-info'" ng-repeat="agent in dataShown">
+                    <div ng-if="!loading && clusterTab==='agents-info'" ng-class="(dataShown.length > 0) ? 'ownNavBarCluster clusterScrollable' : 'ownNavBarCluster'">
+                    <div layout="row" class="ownNavBarCluster" ng-if="!loading && dataShown.length > 0 && clusterTab==='agents-info'" ng-repeat="agent in dataShown track by $index">
                         <div flex>{{agent.id}}</div>
                         <div flex>{{agent.name}}</div>
                         <div flex>
-                            <i ng-class="(agent.status === 'Active') ? 'fa fa-check-circle-o ownGreen' : 'fa fa-close ownRed'"></i> {{agent.status}}</div>
+                            <i ng-class="(agent.status === 'Active') ? 'fa fa-circle ownGreen' : 'fa fa-circle ownRed'"></i> {{agent.status}}</div>
                         <div flex>{{agent.ip}}</div>
                     </div>
-                    <div layout="row" class="ownNavBarCluster" ng-init="showRaw=false">
+                    </div>
+                    <div layout="row" class="ownNavBarCluster" ng-if="!loading && clusterTab==='files-info' && dataShown.length === 0">
                         <div flex>
-                            <h4>RAW</h4>
-                            <md-divider></md-divider>
-                            <a ng-click="showRaw = !showRaw">
-                                <i class="fa fa-eye"></i> See full output</a>
+                            <p>
+                                <i class="fa fa-meh-o"></i> There are no files to show.</p>
                         </div>
                     </div>
-                    <div layout="row" class="ownNavBarCluster" ng-show="showRaw">
+                     <div layout="row" class="ownNavBarCluster" ng-if="dataShown.length > 0 && clusterTab==='files-info'">
                         <div flex>
-                            <pre flex class="json-beautifier"><code dynamic="raw"></code></pre>
+                            <h4>File</h4>
+                        </div>
+                        <div flex>
+                            <h4>Status</h4>
+                        </div>
+                    </div>
+                    <md-divider ng-if="clusterTab==='files-info'"></md-divider>
+                    <div ng-if="clusterTab==='files-info'" ng-class="(dataShown.length > 0) ? 'ownNavBarCluster clusterScrollable' : 'ownNavBarCluster'">
+                        <div layout="row" class="ownNavBarCluster" ng-if="!loading && dataShown.length > 0 && clusterTab==='files-info'" ng-repeat="file in dataShown track by $index">
+                            <div flex>{{file.file}}</div>
+                            <div flex>
+                                <i ng-class="(file.status === 'synchronized') ? 'fa fa-circle ownGreen' : 'fa fa-circle ownRed'"></i> {{file.status}}</div>
                         </div>
                     </div>
                 </md-card-content>
@@ -131,10 +146,12 @@
                     <div layout="row" class="ownNavBarCluster">
                         <div flex>
                             <h4>Running</h4>
+                            <i ng-class="(status.running === 'yes') ? 'fa fa-circle ownGreen' : 'fa fa-circle ownRed'"></i>
                             <span class="md-secondary">{{status.running}}</span>
                         </div>
                         <div flex>
                             <h4>Enabled</h4>
+                            <i ng-class="(status.enabled === 'yes') ? 'fa fa-circle ownGreen' : 'fa fa-circle ownRed'"></i>
                             <span class="md-secondary">{{status.enabled}}</span>
                         </div>
                     </div>
