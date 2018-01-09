@@ -1,205 +1,200 @@
-<md-content flex ng-controller="clusterController" layout="column" ng-if="submenuNavItem == 'monitoring'">
+<md-content flex ng-controller="clusterController" layout="column" ng-if="submenuNavItem == 'monitoring'" ng-init="lookingNode=false">
     <div layout="column" layout-align="start stretch">
-
-        <div layout="row" layout-align="start stretch">
+        <div layout="row" layout-align="start stretch" ng-show="!lookingNode">
             <md-card flex>
+                <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">
+                            <a ng-click="lookingNode=false">{{ currentAPI }}</a> /
+                            <a ng-click="lookingNode=false">nodes</a> /</span>
+
+                    </md-card-title-text>
+                </md-card-title>
                 <md-card-content>
+
+                    <div layout="row" class="ownNavBarCluster">
+                        <div flex>
+                            <h4>Node</h4>
+                        </div>
+                        <div flex>
+                            <h4>Status</h4>
+                        </div>
+                        <div flex>
+                            <h4>Url</h4>
+                        </div>
+                    </div>
+                    <md-divider></md-divider>
+                    <div layout="row" class="ownNavBarCluster" ng-repeat="item in dataShownHeader.items">
+                        <div flex>
+                            <a ng-click="switchNode(item)">
+                                <i class="fa fa-eye"></i> {{item.node}}</a>
+                        </div>
+                        <div flex>
+                            <i ng-class="(item.status === 'connected') ? 'fa fa-check-circle-o ownGreen' : 'fa fa-close ownRed'"></i> {{(item.status === 'connected')? ' connected' : ' disconnected'}}
+                        </div>
+                        <div flex>{{item.url}}</div>
+                    </div>
+                </md-card-content>
+            </md-card>
+        </div>
+
+        <style>
+            .ownRed {
+                color: red;
+            }
+
+            .ownGreen {
+                color: green;
+            }
+
+            .ownNavBarCluster {
+                margin-left: 20px;
+            }
+        </style>
+
+        <div layout="row" layout-align="start stretch" ng-show="lookingNode">
+            <md-card flex>
+                <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">
+                            <a ng-click="lookingNode=false">{{ currentAPI }}</a> /
+                            <a ng-click="lookingNode=false">nodes</a> / {{ selectedNode.node }}</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-content>
+
                     <md-nav-bar md-selected-nav-item="clusterTab">
-                        <md-nav-item md-nav-click="switchClusterTab('node-info')" name="node-info">
-                            Node
-                        </md-nav-item>
                         <md-nav-item md-nav-click="switchClusterTab('agents-info')" name="agents-info">
                             Agents
                         </md-nav-item>
                         <md-nav-item md-nav-click="switchClusterTab('files-info')" name="files-info">
                             Files
                         </md-nav-item>
-                        <md-nav-item md-nav-click="switchClusterTab('nodes-info')" name="nodes-info">
-                            Nodes
-                        </md-nav-item>
-                        <md-nav-item md-nav-click="switchClusterTab('status-info')" name="status-info">
-                            Status
-                        </md-nav-item>
-                        <md-nav-item md-nav-click="switchClusterTab('config-info')" name="config-info">
-                            Configuration
-                        </md-nav-item>
                     </md-nav-bar>
-                    <div layout="row" ng-if="clusterTab==='node-info'">
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Node</h3>
-                                <span class="md-secondary">{{dataShown.node}}</span>
-                            </md-card-content>
-                        </md-card>
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Cluster</h3>
-                                <span class="md-secondary">{{dataShown.cluster}}</span>
-                            </md-card-content>
-                        </md-card>
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Type</h3>
-                                <span class="md-secondary">{{dataShown.type}}</span>
-                            </md-card-content>
-                        </md-card>
-                    </div>
-                    <div layout="row" ng-if="clusterTab==='agents-info'">
-                        <md-card flex>
-                            <md-card-content>
-                                <div layout="row">
-                                    <div flex>
-                                        <b>NODE</b>
-                                    </div>
-                                    <div flex>
-                                        <b>ID</b>
-                                    </div>
-                                    <div flex>
-                                        <b>NAME</b>
-                                    </div>
-                                    <div flex>
-                                        <b>STATUS</b>
-                                    </div>
-                                    <div flex>
-                                        <b>IP</b>
-                                    </div>
-                                    <md-divider></md-divider>
-                                </div>
-                                <div style="overflow-y: scroll;  height: 300px;" >
-                                    <div layout="row" ng-repeat="agent in dataShown track by $index">
-                                        <div flex>{{agent.node}}</div>
-                                        <div flex>{{agent.id}}</div>
-                                        <div flex>{{agent.name}}</div>
-                                        <div flex>{{agent.status}}</div>
-                                        <div flex>{{agent.ip}}</div>
-                                    </div>
-                                </div>
 
-                            </md-card-content>
-                        </md-card>
+                    <div layout="row" class="ownNavBarCluster" ng-if="clusterTab==='agents-info' && dataShown.length === 0">
+                        <div flex>
+                            <p>
+                                <i class="fa fa-meh-o"></i> This node has no agents registered yet.</p>
+                        </div>
                     </div>
-                    <div layout="row" ng-if="clusterTab==='nodes-info'">
-                        <md-card flex="25">
-                            <md-card-content>
-                                <h3>Total</h3>
-                                <span class="md-secondary">{{dataShown.totalItems}}</span>
-                            </md-card-content>
-                        </md-card>
-                        <md-card flex="75">
-                            <md-card-content>
-                                <h3>Nodes</h3>
-                                <div layout="row">
-                                    <div flex>
-                                        <b>URL</b>
-                                    </div>
-                                    <div flex>
-                                        <b>NODE</b>
-                                    </div>
-                                    <div flex>
-                                        <b>STATUS</b>
-                                    </div>
-                                    <div flex>
-                                        <b>CLUSTER</b>
-                                    </div>
-                                    <md-divider></md-divider>
-                                </div>
-                                <div layout="row" ng-repeat="item in dataShown.items">
-                                    <div flex>{{item.url}}</div>
-                                    <div flex>{{item.node}}</div>
-                                    <div flex>{{item.status}}</div>
-                                    <div flex>{{item.cluster}}</div>
-                                </div>
-
-                            </md-card-content>
-                        </md-card>
-                    </div>
-                    <div layout="row" ng-if="clusterTab==='status-info'">
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Running</h3>
-                                <span class="md-secondary">{{dataShown.running}}</span>
-                            </md-card-content>
-                        </md-card>
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Enabled</h3>
-                                <span class="md-secondary">{{dataShown.enabled}}</span>
-                            </md-card-content>
-                        </md-card>
-                    </div>
-
-                    <div layout="row" ng-if="clusterTab==='config-info'">
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Disabled</h3>
-                                <span class="md-secondary">{{dataShown.disabled}}</span>
-                            </md-card-content>
-                        </md-card>
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Hidden</h3>
-                                <span class="md-secondary">{{dataShown.hidden}}</span>
-                            </md-card-content>
-                        </md-card>
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Name</h3>
-                                <span class="md-secondary">{{dataShown.name}}</span>
-                            </md-card-content>
-                        </md-card>
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Interval</h3>
-                                <span class="md-secondary">{{dataShown.interval}}</span>
-                            </md-card-content>
-                        </md-card>
-                    </div>
-                    <div layout="row" ng-if="clusterTab==='config-info'">
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Node name</h3>
-                                <span class="md-secondary">{{dataShown.node_name}}</span>
-                            </md-card-content>
-                        </md-card>
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Bind address</h3>
-                                <span class="md-secondary">{{dataShown.bind_addr}}</span>
-                            </md-card-content>
-                        </md-card>
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Node type</h3>
-                                <span class="md-secondary">{{dataShown.node_type}}</span>
-                            </md-card-content>
-                        </md-card>
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Port</h3>
-                                <span class="md-secondary">{{dataShown.port}}</span>
-                            </md-card-content>
-                        </md-card>
-                    </div>
-                    <div layout="row" ng-if="clusterTab==='config-info'">
-                        <md-card flex>
-                            <md-card-content>
-                                <h3>Nodes</h3>
-                                <span class="md-secondary">{{dataShown.nodes}}</span>
-                            </md-card-content>
-                        </md-card>
+                    <div layout="row" class="ownNavBarCluster" ng-if="dataShown.length > 0 && clusterTab==='agents-info'">
+                        <div flex>
+                            <h4>Id</h4>
+                        </div>
+                        <div flex>
+                            <h4>Name</h4>
+                        </div>
+                        <div flex>
+                            <h4>Status</h4>
+                        </div>
+                        <div flex>
+                            <h4>Ip</h4>
+                        </div>
 
                     </div>
-                    <div layout="row">
-                        <md-card flex ng-init="showRaw=false">
-                            <md-card-content>
-                                <h3>RAW</h3>
-                                <div flex><a ng-click="showRaw = !showRaw"><i class="fa fa-eye"></i> See full output</a></div>
-                                <div flex ng-show="showRaw">
-                                    <pre flex class="json-beautifier"><code dynamic="raw"></code></pre>
-                                </div>
-                                
-                            </md-card-content>
-                        </md-card>
+                    <md-divider ng-if="clusterTab==='agents-info'"></md-divider>
+
+                    <div layout="row" class="ownNavBarCluster" ng-if="dataShown.length > 0 && clusterTab==='agents-info'" ng-repeat="agent in dataShown">
+                        <div flex>{{agent.id}}</div>
+                        <div flex>{{agent.name}}</div>
+                        <div flex>
+                            <i ng-class="(agent.status === 'Active') ? 'fa fa-check-circle-o ownGreen' : 'fa fa-close ownRed'"></i> {{agent.status}}</div>
+                        <div flex>{{agent.ip}}</div>
+                    </div>
+                    <div layout="row" class="ownNavBarCluster" ng-init="showRaw=false">
+                        <div flex>
+                            <h4>RAW</h4>
+                            <md-divider></md-divider>
+                            <a ng-click="showRaw = !showRaw">
+                                <i class="fa fa-eye"></i> See full output</a>
+                        </div>
+                    </div>
+                    <div layout="row" class="ownNavBarCluster" ng-show="showRaw">
+                        <div flex>
+                            <pre flex class="json-beautifier"><code dynamic="raw"></code></pre>
+                        </div>
+                    </div>
+                </md-card-content>
+            </md-card>
+        </div>
+        <div layout="row" layout-align="start stretch" ng-show="lookingNode">
+            <md-card flex>
+                <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">
+                            <a ng-click="lookingNode=false">{{ currentAPI }}</a> /
+                            <a ng-click="lookingNode=false">nodes</a> / {{ selectedNode.node }} / status /</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-content>
+                    <div layout="row" class="ownNavBarCluster">
+                        <div flex>
+                            <h4>Running</h4>
+                            <span class="md-secondary">{{status.running}}</span>
+                        </div>
+                        <div flex>
+                            <h4>Enabled</h4>
+                            <span class="md-secondary">{{status.enabled}}</span>
+                        </div>
+                    </div>
+                </md-card-content>
+            </md-card>
+        </div>
+        <div layout="row" layout-align="start stretch" ng-show="lookingNode">
+            <md-card flex>
+                <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">
+                            <a ng-click="lookingNode=false">{{ currentAPI }}</a> /
+                            <a ng-click="lookingNode=false">nodes</a> / {{ selectedNode.node }} / configuration /</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-content>
+
+                    <div layout="row" class="ownNavBarCluster">
+                        <div flex>
+                            <h4>Disabled</h4>
+                            <span class="md-secondary">{{config.disabled}}</span>
+                        </div>
+                        <div flex>
+                            <h4>Hidden</h4>
+                            <span class="md-secondary">{{config.hidden}}</span>
+                        </div>
+                        <div flex>
+                            <h4>Name</h4>
+                            <span class="md-secondary">{{config.name}}</span>
+                        </div>
+                        <div flex>
+                            <h4>Interval</h4>
+                            <span class="md-secondary">{{config.interval}}</span>
+                        </div>
+                    </div>
+                    <md-divider></md-divider>
+                    <div layout="row" class="ownNavBarCluster">
+                        <div flex>
+                            <h4>Node name</h4>
+                            <span class="md-secondary">{{config.node_name}}</span>
+                        </div>
+                        <div flex>
+                            <h4>Bind address</h4>
+                            <span class="md-secondary">{{config.bind_addr}}</span>
+                        </div>
+                        <div flex>
+                            <h4>Node type</h4>
+                            <span class="md-secondary">{{config.node_type}}</span>
+                        </div>
+                        <div flex>
+                            <h4>Port</h4>
+                            <span class="md-secondary">{{config.port}}</span>
+                        </div>
+                    </div>
+                    <md-divider></md-divider>
+                    <div layout="row" class="ownNavBarCluster">
+                        <div flex>
+                            <h4>Nodes</h4>
+                            <span class="md-secondary">{{config.nodes}}</span>
+                        </div>
                     </div>
                 </md-card-content>
             </md-card>

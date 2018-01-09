@@ -2,13 +2,26 @@ const beautifier = require('plugins/wazuh/utils/json-beautifier');
 let app = require('ui/modules')
 .get('app/wazuh', [])
 .controller('clusterController', function ($scope, clusterMonitoring, Notifier) {
-    const notifier = new Notifier();
+    const notifier      = new Notifier();
+    $scope.selectedNode    = null;
+    $scope.clusterTab      = 'agents-info';
+    $scope.dataShown       = null;
+    $scope.config          = null;
+    $scope.dataShownHeader = null;
+    $scope.loading         = true;
+    $scope.error           = null;
+    $scope.raw             = null;
+    $scope.lookingNode     = false;
 
-    $scope.clusterTab = 'node-info';
-    $scope.dataShown  = null;
-    $scope.loading    = true;
-    $scope.error      = null;
-    $scope.raw        = null;
+    $scope.switchNode = async item => {
+        $scope.lookingNode  = true;
+        $scope.selectedNode = item;
+        $scope.clusterTab   = 'agents-info';
+        await loadAgentsInfo();
+        await loadConfigInfo();
+        await loadStatusInfo();
+        $scope.$digest();
+    }
 
     $scope.switchClusterTab = tab => {
         $scope.showRaw    = false;
@@ -16,32 +29,21 @@ let app = require('ui/modules')
         $scope.raw        = 'Loading...';
         $scope.clusterTab = tab;
         switch($scope.clusterTab){
-            case 'node-info':
-                loadNodeInfo();
-                break;
             case 'agents-info':
                 loadAgentsInfo();
                 break;
             case 'files-info':
                 loadFilesInfo();
                 break;
-            case 'nodes-info':
-                loadNodesInfo();
-                break;
-            case 'status-info':
-                loadStatusInfo();
-                break;
-            case 'config-info':
-                loadConfigInfo();
-                break;
             default:
-                loadNodeInfo();
+                loadAgentsInfo();
                 break;
         };
     }
 
     const handleError = error => {
-        notifier.error(error);
+        notifier.error(error.message || error);
+        $scope.raw     = beautifier.prettyPrint(error.message || error);
         $scope.loading = false;
         $scope.error   = error;
     }
@@ -52,19 +54,6 @@ let app = require('ui/modules')
         $scope.loading   = false;
         $scope.error     = null;
         $scope.$digest();
-    }
-
-    const loadNodeInfo = async () => {
-        try {
-            $scope.loading = true;
-            const data = await clusterMonitoring.getNodeInfo();
-            if(data.data.error) {
-                return handleError(data.data.error);
-            }
-            return handleData(data);
-        } catch (error) {
-            handleError(error);
-        }
     }
 
     const loadAgentsInfo = async () => {
@@ -91,7 +80,8 @@ let app = require('ui/modules')
     const loadFilesInfo = async () => {
         try {
             $scope.loading = true;
-            const data = await clusterMonitoring.getFiles();
+            const data = await clusterMonitoring.getFiles($scope.selectedNode.node);
+
             if(data.data.error) {
                 return handleError(data.data.error);
             }
@@ -101,14 +91,18 @@ let app = require('ui/modules')
         }
     }
 
-    const loadNodesInfo = async () => {
+    const loadNodesInfo = async (header) => {
         try {
-            $scope.loading = true;
+
             const data = await clusterMonitoring.getNodes();
             if(data.data.error) {
                 return handleError(data.data.error);
             }
-            return handleData(data);
+            $scope.selectedNode    = data.data.data.items[0];
+            $scope.dataShownHeader = data.data.data;
+            $scope.loading         = false;
+            $scope.error           = null;
+            return;
         } catch (error) {
             handleError(error);
         }
@@ -117,11 +111,10 @@ let app = require('ui/modules')
     const loadStatusInfo = async () => {
         try {
             $scope.loading = true;
-            const data = await clusterMonitoring.getStatus();
-            if(data.data.error) {
-                return handleError(data.data.error);
-            }
-            return handleData(data);
+            const data     = await clusterMonitoring.getStatus($scope.selectedNode.node);
+            $scope.status  = data.data.data;
+            $scope.loading = false;
+            return;
         } catch (error) {
             handleError(error);
         }
@@ -130,16 +123,14 @@ let app = require('ui/modules')
     const loadConfigInfo = async () => {
         try {
             $scope.loading = true;
-            const data = await clusterMonitoring.getConfig();
-            if(data.data.error) {
-                return handleError(data.data.error);
-            }
-            return handleData(data);
+            const data    = await clusterMonitoring.getConfig($scope.selectedNode.node);
+            $scope.config = data.data.data;
+            $scope.loading = false;
+            return;
         } catch (error) {
             handleError(error);
         }
     }
 
-    loadNodeInfo();
-
+    loadNodesInfo().then(() => $scope.$digest()).catch(console.error);
 });
