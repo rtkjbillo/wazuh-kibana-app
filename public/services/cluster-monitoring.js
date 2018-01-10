@@ -24,9 +24,6 @@ require('ui/modules')
     /** Get the agents of each node. */
     const getAgents   = () => request('GET','/cluster/agents',{});
 
-    /** Get the files and their statuses of each node. */
-    const getFiles    = () => request('GET','/cluster/files',{});
-
     /** Get a list of all nodes. */
     const getNodes    = () => request('GET','/cluster/nodes',{});
 
@@ -55,6 +52,6 @@ require('ui/modules')
     }
 
     return {
-        getNodeInfo, getAgents, getFiles, getNodes, getStatus, getConfig
+        getNodeInfo, getAgents, getNodes, getStatus, getConfig
     };
 });
