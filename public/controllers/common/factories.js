@@ -11,12 +11,14 @@ const compose = (DataHandler, path) => {
     return dataHandler;
 };
 
-const groups   = DataHandler => compose(DataHandler,'/agents/groups');
-const agents   = DataHandler => compose(DataHandler,'/agents');
-const logs     = DataHandler => compose(DataHandler, '/manager/logs');
-const rules    = DataHandler => compose(DataHandler, '/rules');
-const decoders = DataHandler => compose(DataHandler, '/decoders');
-const simple   = DataHandler => new DataHandler();
+const groups        = DataHandler => compose(DataHandler,'/agents/groups');
+const agents        = DataHandler => compose(DataHandler,'/agents');
+const logs          = DataHandler => compose(DataHandler, '/manager/logs');
+const rules         = DataHandler => compose(DataHandler, '/rules');
+const decoders      = DataHandler => compose(DataHandler, '/decoders');
+const clusterFiles  = DataHandler => compose(DataHandler, '/cluster/files');
+const clusterAgents = DataHandler => compose(DataHandler, '/cluster/agents');
+const simple        = DataHandler => new DataHandler();
 
 app
 	.factory('Groups', groups)
@@ -29,18 +31,5 @@ app
     .factory('RulesAutoComplete', rules)
     .factory('Decoders', decoders)
     .factory('DecodersAutoComplete', decoders)
-    .directive('lazyLoadData', function($compile) {
-        return {
-            link: (scope, el, attrs) => {
-                let now = new Date().getTime();
-                let rep = angular.element(document.getElementsByClassName('md-virtual-repeat-scroller'));
-                rep.on('scroll', evt => {
-                    if (rep[0].scrollTop + rep[0].offsetHeight >= rep[0].scrollHeight)
-                        if (new Date().getTime() - now > 100) {
-                            now = new Date().getTime();
-                            scope.$apply(() => scope.$eval(attrs.lazyLoadData));
-                        }
-                });
-            }
-        }; 
-    });
+    .factory('ClusterFiles', clusterFiles)
+    .factory('ClusterAgents', clusterAgents);
