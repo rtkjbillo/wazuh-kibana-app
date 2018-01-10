@@ -136,5 +136,12 @@ let app = require('ui/modules')
         }
     }
 
-    loadNodesInfo().then(() => $scope.$digest()).catch(console.error);
+    loadNodesInfo()
+    .then(clusterMonitoring.getAgents)
+    .then(data => {
+        for(let node of $scope.dataShownHeader.items){
+            node.agents = (typeof data.data.data[node.node] !== 'undefined') ? data.data.data[node.node].length : 0;
+        }
+        $scope.$digest();
+    }).catch(console.error);
 });
