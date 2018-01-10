@@ -1,10 +1,13 @@
 const beautifier = require('plugins/wazuh/utils/json-beautifier');
 let app = require('ui/modules')
 .get('app/wazuh', [])
-.controller('clusterController', function ($scope, clusterMonitoring, Notifier) {
+.controller('clusterController', function ($scope, clusterMonitoring, Notifier,ClusterAgents,ClusterFiles) {
+    const clusterAgents = ClusterAgents;
+    const clusterFiles  = ClusterFiles;
     const notifier      = new Notifier();
+
     $scope.selectedNode    = null;
-    $scope.clusterTab      = 'agents-info';
+    $scope.clusterTab      = 'agents';
     $scope.dataShown       = [];
     $scope.config          = null;
     $scope.dataShownHeader = null;
@@ -12,28 +15,53 @@ let app = require('ui/modules')
     $scope.error           = null;
     $scope.raw             = null;
     $scope.lookingNode     = false;
-    
+
+    $scope.applyFilter = searchTerm => {
+        if($scope.clusterTab === 'agents')     clusterAgents.addFilter('search', searchTerm);
+        else if($scope.clusterTab === 'files') clusterFiles.addFilter('search', searchTerm);
+        return;
+    }
+
+    const resetHandlers = () => {
+        if(!$scope.selectedNode) return;
+        clusterAgents.reset();
+        clusterFiles.reset();
+        clusterAgents.path = `/cluster/agents/${$scope.selectedNode.node}`;
+        clusterFiles.path  = `/cluster/files/${$scope.selectedNode.node}`;
+    }
+
+    $scope.$watch('selectedNode',resetHandlers);
+
+    $scope.$watch('lookingNode',() => {
+        if(!$scope.lookingNode) resetHandlers();
+    })
+
     $scope.switchNode = async item => {
         $scope.lookingNode  = true;
         $scope.selectedNode = item;
-        $scope.clusterTab   = 'agents-info';
+        $scope.clusterTab   = 'agents';
         await loadAgentsInfo();
-        await loadConfigInfo();
-        await loadStatusInfo();
         $scope.$digest();
     }
 
     $scope.switchClusterTab = tab => {
+        resetHandlers();
         $scope.showRaw    = false;
         $scope.dataShown  = [];
         $scope.raw        = 'Loading';
         $scope.clusterTab = tab;
         switch($scope.clusterTab){
-            case 'agents-info':
+            case 'agents':
                 loadAgentsInfo();
                 break;
-            case 'files-info':
+            case 'files':
                 loadFilesInfo();
+                break;
+            case 'status':
+                loadStatusInfo();
+                break;
+            case 'configuration':
+                loadConfigInfo();
                 break;
             default:
                 loadAgentsInfo();
@@ -49,8 +77,8 @@ let app = require('ui/modules')
     }
 
     const handleData = data => {
-        $scope.dataShown = data.data.data;
-        $scope.raw       = beautifier.prettyPrint(data.data.data);
+        $scope.dataShown = data;
+        $scope.raw       = beautifier.prettyPrint(data);
         $scope.loading   = false;
         $scope.error     = null;
         $scope.$digest();
@@ -59,12 +87,8 @@ let app = require('ui/modules')
     const loadAgentsInfo = async () => {
         try {
             $scope.loading = true;
-            let data = await clusterMonitoring.getAgents();
-            if(data.data.error) {
-                return handleError(data.data.error);
-            }
-            const fixed = data.data.data[$scope.selectedNode.node] || [];
-            data.data.data = fixed;
+            await clusterAgents.nextPage();
+            const data = clusterAgents.items;
             return handleData(data);
         } catch (error) {
             handleError(error);
@@ -74,30 +98,19 @@ let app = require('ui/modules')
     const loadFilesInfo = async () => {
         try {
             $scope.loading = true;
-            const data = await clusterMonitoring.getFiles();
-            data.data.data = data.data.data[$scope.selectedNode.url];
-            let fixed = [];
-            for(let key in data.data.data){
-                for(let file of data.data.data[key]){
-                    fixed.push({
-                        file: file,
-                        status: key
-                    });
-                }
-            }
-            data.data.data = fixed;
-            if(data.data.error) {
-                return handleError(data.data.error);
-            }
+            await clusterAgents.nextPage();
+            const data = clusterAgents.items;
             return handleData(data);
         } catch (error) {
             handleError(error);
         }
     }
 
+    $scope.loadAgentsInformation = () => loadAgentsInfo();
+    $scope.loadFilesInformation  = () => loadFilesInfo();
+
     const loadNodesInfo = async (header) => {
         try {
-
             const data = await clusterMonitoring.getNodes();
             if(data.data.error) {
                 return handleError(data.data.error);
@@ -116,8 +129,12 @@ let app = require('ui/modules')
         try {
             $scope.loading = true;
             const data     = await clusterMonitoring.getStatus($scope.selectedNode.node);
+            if(data.data.error) {
+                return handleError(data.data.error);
+            }
             $scope.status  = data.data.data;
             $scope.loading = false;
+            $scope.$digest();
             return;
         } catch (error) {
             handleError(error);
@@ -128,8 +145,12 @@ let app = require('ui/modules')
         try {
             $scope.loading = true;
             const data    = await clusterMonitoring.getConfig($scope.selectedNode.node);
-            $scope.config = data.data.data;
+            if(data.data.error) {
+                return handleError(data.data.error);
+            }
+            $scope.config  = data.data.data;
             $scope.loading = false;
+            $scope.$digest();
             return;
         } catch (error) {
             handleError(error);
