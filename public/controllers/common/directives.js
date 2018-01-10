@@ -49,4 +49,19 @@ app.directive('dynamic', function($compile) {
             },
             template: menuTemplate
         };
+    })
+    .directive('lazyLoadData', function($compile) {
+        return {
+            link: (scope, el, attrs) => {
+                let now = new Date().getTime();
+                let rep = angular.element(document.getElementsByClassName('md-virtual-repeat-scroller'));
+                rep.on('scroll', evt => {
+                    if (rep[0].scrollTop + rep[0].offsetHeight >= rep[0].scrollHeight)
+                        if (new Date().getTime() - now > 100) {
+                            now = new Date().getTime();
+                            scope.$apply(() => scope.$eval(attrs.lazyLoadData));
+                        }
+                });
+            }
+        }; 
     });
