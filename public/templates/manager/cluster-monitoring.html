@@ -20,18 +20,22 @@
                             <h4>Status</h4>
                         </div>
                         <div flex>
+                            <h4>Agents</h4>
+                        </div>
+                        <div flex>
                             <h4>Url</h4>
                         </div>
                     </div>
                     <md-divider></md-divider>
                     <div layout="row" class="ownNavBarCluster" ng-repeat="item in dataShownHeader.items">
                         <div flex>
-                            <a ng-click="switchNode(item)">
-                                <i class="fa fa-eye"></i> {{item.node}}</a>
+                            <a ng-if="item.node !== 'unknown'" ng-click="switchNode(item)"><i class="fa fa-eye"></i> {{item.node}}</a>
+                            <span ng-if="item.node === 'unknown'">---</span>
                         </div>
                         <div flex>
                             <i ng-class="(item.status === 'connected') ? 'fa fa-circle ownGreen' : 'fa fa-circle ownRed'"></i> {{(item.status === 'connected')? ' connected' : ' disconnected'}}
                         </div>
+                        <div flex>{{item.agents}}</div>
                         <div flex>{{item.url}}</div>
                     </div>
                 </md-card-content>
@@ -93,8 +97,8 @@
                         <div flex>
                             <h4>Status</h4>
                         </div>
-                        <div flex>
-                            <h4>Ip</h4>
+                         <div flex>
+                            <h4>Ip</i></h4>
                         </div>
 
                     </div>
