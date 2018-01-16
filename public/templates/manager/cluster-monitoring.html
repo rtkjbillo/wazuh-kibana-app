@@ -10,20 +10,23 @@
                 </span>
 
 
-                <md-card-content class="groupsFixPadding md-card-content-groups">
-
-                    <md-toolbar layout="row" class="topPaddingSearchNoBottom md-toolbar-tools-groups">
-                        <span flex>Node</span>
-                        <span flex>Status</span>
-                        <span flex>Agents</span>
-                        <span flex>Url</span>
+                <md-card-content class="groupsFixPadding md-card-content-groups" ng-init="sortNodeTerm=false">
+                    <div layout="row" class="topPaddingSearch">
+                        <input flex id="query" placeholder="Filter nodes..." type="text" ng-model="searchNodeTerm"                            class="searchBarCluster input-filter-box agents-preview-search-box" />
+                    </div>
+                    <md-toolbar layout="row" class="topPaddingSearchNoBottom md-toolbar-tools-groups" ng-init="sortNodeTermDir=false">
+                        <span ng-click="sortNodes('node')" flex>Node <i class="fa" ng-class="sortNodeTerm === 'node' ? (sortNodeTermDir ? 'fa-sort-asc' : 'fa-sort-desc') : 'fa-sort'" aria-hidden="true"></i></span>
+                        <span ng-click="sortNodes('status')" flex>Status <i class="fa" ng-class="sortNodeTerm === 'status' ? (sortNodeTermDir ? 'fa-sort-asc' : 'fa-sort-desc') : 'fa-sort'" aria-hidden="true"></i></span>
+                        <span ng-click="sortNodes('agents')" flex>Agents <i class="fa" ng-class="sortNodeTerm === 'agents' ? (sortNodeTermDir ? 'fa-sort-asc' : 'fa-sort-desc') : 'fa-sort'" aria-hidden="true"></i></span>
+                        <span ng-click="sortNodes('url')" flex>Url <i class="fa" ng-class="sortNodeTerm === 'url' ? (sortNodeTermDir ? 'fa-sort-asc' : 'fa-sort-desc') : 'fa-sort'" aria-hidden="true"></i></span>
+                        <span ng-click="sortNodes('synchFiles')" flex>Synchronized Files <i class="fa" ng-class="sortNodeTerm === 'synchFiles' ? (sortNodeTermDir ? 'fa-sort-asc' : 'fa-sort-desc') : 'fa-sort'" aria-hidden="true"></i></span>
                     </md-toolbar>
                     <md-divider></md-divider>
 
                 </md-card-content>
                 <div flex layout="column" class="md-padding groupsFixPadding" ng-if="!lookingGroup">
                     <div flex class="ownNavBarCluster clusterScrollable">
-                        <div layout="row" ng-repeat="item in dataShownHeader.items" ng-click="switchNode(item)" class="md-subhead agents-groups-preview agents-preview-table groupsFixPadding" ng-class="item.node==='unknown' ? 'groupsANone' : ''">
+                        <div layout="row" ng-repeat="item in dataShownHeader.items | filter: searchNodeTerm" ng-click="switchNode(item)" class="md-subhead agents-groups-preview agents-preview-table groupsFixPadding" ng-class="item.node==='unknown' ? 'groupsANone' : ''">
                             <div flex>
                                 <span class="md-headline" ng-if="item.node !== 'unknown'">{{item.node}}</span>
                                 <span class="md-headline" ng-if="item.node === 'unknown'"><i class="fa fa-warning"></i></span>
@@ -38,7 +41,9 @@
                             <div flex>
                                 <span class="md-headline">{{item.url}}</span>
                             </div>
-
+                            <div flex>
+                                <span class="md-headline">{{item.synchFiles}} / {{item.totalFiles}}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -116,7 +121,7 @@
                 <div flex layout="column" class="md-padding groupsFixPadding" ng-if="!loading && clusterTab==='agents'">
                     <div flex ng-if="!loading && clusterAgents.items.length > 0 && clusterTab==='agents'" class="ownNavBarCluster clusterScrollable"
                         when-scrolled="clusterAgents.nextPage('')">
-                        <div layout="row" ng-repeat="agent in clusterAgents.items | orderBy : clusterAgents.sortValue : clusterAgents.sortDir" class="md-subhead agents-groups-preview agents-preview-table groupsFixPadding">
+                        <div layout="row" ng-repeat="agent in clusterAgents.items | orderBy : clusterAgents.sortValue : clusterAgents.sortDir" ng-click="showAgent(agent)" class="md-subhead agents-groups-preview agents-preview-table groupsFixPadding">
 
                             <div flex>
                                 <span class="md-headline">{{agent.id}}</span>

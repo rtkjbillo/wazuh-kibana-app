@@ -22,7 +22,7 @@ require('ui/modules')
     const getNodeInfo = () => request('GET','/cluster/node',{});
 
     /** Get the agents of each node. */
-    const getAgents   = () => request('GET','/cluster/agents',{});
+    const getAgents   = () => request('GET','/cluster/agents',{limit:0});
 
     /** Get a list of all nodes. */
     const getNodes    = () => request('GET','/cluster/nodes',{});
@@ -32,6 +32,30 @@ require('ui/modules')
                                        `/cluster/files/${nodeUrl}`,
                                        { limit:1 }
                                );
+
+    /** Get total number of synchronized files from one node */
+    const getSynchFilesCount = nodeUrl => {
+        return {
+                data: {
+                    data: {
+                        totalItems: 400
+                    }
+                }
+            }
+        
+    };
+
+    /** Get total number of files from one node */
+    const getTotalFilesCount = nodeUrl => {
+        return  {
+                data: {
+                    data: {
+                        totalItems: 400
+                    }
+                }
+            }
+        
+    };
 
     /**
      * If a node is provided, returns the status of that node.
@@ -58,6 +82,6 @@ require('ui/modules')
     }
 
     return {
-        getNodeInfo, getAgents, getNodes, getStatus, getConfig, getFileCount
+        getNodeInfo, getAgents, getNodes, getStatus, getConfig, getFileCount, getSynchFilesCount , getTotalFilesCount
     };
 });

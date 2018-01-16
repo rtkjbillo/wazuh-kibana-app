@@ -1,7 +1,7 @@
 const beautifier = require('plugins/wazuh/utils/json-beautifier');
 const app = require('ui/modules')
 .get('app/wazuh', [])
-.controller('clusterController', function ($scope, clusterMonitoring, Notifier,ClusterAgents,ClusterFiles) {
+.controller('clusterController', function ($scope, $rootScope, $location, clusterMonitoring, Notifier,ClusterAgents,ClusterFiles) {
     $scope.clusterAgents = ClusterAgents;
     $scope.clusterFiles  = ClusterFiles;
     const notifier       = new Notifier();
@@ -65,6 +65,13 @@ const app = require('ui/modules')
         $scope.clusterTab = tab;
     }
 
+    $scope.showAgent = agent => {
+        $rootScope.globalAgent = agent.id;
+        $rootScope.comeFrom    = 'groups';
+        $location.search('tab', null);
+        $location.path('/agents');        
+    };
+
     const handleError = error => {
         notifier.error(error.message || error);
         $scope.raw     = beautifier.prettyPrint(error.message || error);
@@ -120,12 +127,33 @@ const app = require('ui/modules')
         }
     }
 
-    loadNodesInfo()
-    .then(clusterMonitoring.getAgents)
-    .then(data => {
-        for(let node of $scope.dataShownHeader.items){
-            node.agents = (typeof data.data.data[node.node] !== 'undefined') ? data.data.data[node.node].length : 0;
-        }
+    $scope.sortNodes = term => {
+        $scope.sortNodeTermDir = !$scope.sortNodeTermDir;
+        $scope.sortNodeTerm = term;
+        $scope.dataShownHeader.items.sort((a,b) => {
+            if(a[term] > b[term]) return (!$scope.sortNodeTermDir) ? 1 : -1;
+            if(a[term] < b[term]) return (!$scope.sortNodeTermDir) ? -1 : 1;
+            return 0;
+        });
         if(!$scope.$$phase) $scope.$digest();
-    }).catch(console.error);
+    }
+
+
+    const initialize = async () => {
+        try{
+            await loadNodesInfo();
+            const data = await clusterMonitoring.getAgents();
+            for(let node of $scope.dataShownHeader.items){
+                node.agents = (typeof data.data.data[node.node] !== 'undefined') ? data.data.data[node.node].length : 0;
+                const filesData = await Promise.all([clusterMonitoring.getSynchFilesCount(node.url),clusterMonitoring.getTotalFilesCount(node.url)]);
+                node.synchFiles = filesData[0].data.data.totalItems;
+                node.totalFiles = filesData[1].data.data.totalItems;
+            }
+            if(!$scope.$$phase) $scope.$digest();
+        } catch(error){
+            notifier.error('Unexpected error loading controller.' + error.message);
+        }
+    }
+
+    initialize();
 });
