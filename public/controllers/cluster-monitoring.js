@@ -2,8 +2,8 @@ const beautifier = require('plugins/wazuh/utils/json-beautifier');
 let app = require('ui/modules')
 .get('app/wazuh', [])
 .controller('clusterController', function ($scope, clusterMonitoring, Notifier,ClusterAgents,ClusterFiles) {
-    const clusterAgents = ClusterAgents;
-    const clusterFiles  = ClusterFiles;
+    $scope.clusterAgents = ClusterAgents;
+    $scope.clusterFiles  = ClusterFiles;
     const notifier      = new Notifier();
 
     $scope.selectedNode    = null;
@@ -16,46 +16,18 @@ let app = require('ui/modules')
     $scope.raw             = null;
     $scope.lookingNode     = false;
 
-    $scope.applyFilter = searchTerm => {
-        if($scope.clusterTab === 'agents')     clusterAgents.addFilter('search', searchTerm);
-        else if($scope.clusterTab === 'files') clusterFiles.addFilter('search', searchTerm);
-        return;
-    }
-
     const resetHandlers = () => {
         if(!$scope.selectedNode) return;
-        clusterAgents.reset();
-        clusterFiles.reset();
-        clusterAgents.path = `/cluster/agents/${$scope.selectedNode.node}`;
-        clusterFiles.path  = `/cluster/files/${$scope.selectedNode.url}`;
-    }
-
-    $scope.$watch('selectedNode',resetHandlers);
-
-    $scope.$watch('lookingNode',() => {
-        if(!$scope.lookingNode) resetHandlers();
-    })
-
-    $scope.switchNode = async item => {
-        $scope.lookingNode  = true;
-        $scope.selectedNode = item;
-        $scope.clusterTab   = 'agents';
-        await loadAgentsInfo();
-        if(!$scope.$$phase) $scope.$digest();
-    }
-
-    $scope.switchClusterTab = tab => {
-        resetHandlers();
-        $scope.showRaw    = false;
-        $scope.dataShown  = [];
-        $scope.raw        = 'Loading';
-        $scope.clusterTab = tab;
+        $scope.clusterAgents.reset();
+        $scope.clusterFiles.reset();
+        $scope.clusterAgents.path = `/cluster/agents/${$scope.selectedNode.node}`;
+        $scope.clusterFiles.path  = `/cluster/files/${$scope.selectedNode.url}`;
         switch($scope.clusterTab){
             case 'agents':
-                loadAgentsInfo();
+                $scope.clusterAgents.nextPage();
                 break;
             case 'files':
-                loadFilesInfo();
+                $scope.clusterFiles.nextPage();    
                 break;
             case 'status':
                 loadStatusInfo();
@@ -64,9 +36,34 @@ let app = require('ui/modules')
                 loadConfigInfo();
                 break;
             default:
-                loadAgentsInfo();
+                $scope.clusterAgents.nextPage();
                 break;
         };
+    }
+
+    $scope.$watch('clusterTab',() => resetHandlers());
+
+    $scope.$watch('lookingNode',() => {
+        if(!$scope.lookingNode) $scope.clusterTab = false;
+    })
+
+    $scope.switchNode = async item => {
+        $scope.lookingNode  = true;
+        $scope.selectedNode = item;
+        $scope.clusterAgents.path = `/cluster/agents/${$scope.selectedNode.node}`;
+        $scope.clusterFiles.path  = `/cluster/files/${($scope.selectedNode.url === 'localhost') ? '192.168.1.81' : $scope.selectedNode.url}`;
+        $scope.clusterTab   = 'agents';
+        const data = await clusterMonitoring.getFileCount($scope.selectedNode.url);
+        $scope.hasFiles = (data.data.data && data.data.data.totalItems && data.data.data.totalItems > 0);
+        $scope.clusterAgents.nextPage();
+    }
+
+    $scope.switchClusterTab = tab => {
+        resetHandlers();
+        $scope.showRaw    = false;
+        $scope.dataShown  = [];
+        $scope.raw        = 'Loading';
+        $scope.clusterTab = tab;
     }
 
     const handleError = error => {
@@ -83,31 +80,6 @@ let app = require('ui/modules')
         $scope.error     = null;
         if(!$scope.$$phase) $scope.$digest();
     }
-
-    const loadAgentsInfo = async () => {
-        try {
-            $scope.loading = true;
-            await clusterAgents.nextPage();
-            const data = clusterAgents.items;
-            return handleData(data);
-        } catch (error) {
-            handleError(error);
-        }
-    }
-
-    const loadFilesInfo = async () => {
-        try {
-            $scope.loading = true;
-            await clusterAgents.nextPage();
-            const data = clusterAgents.items;
-            return handleData(data);
-        } catch (error) {
-            handleError(error);
-        }
-    }
-
-    $scope.loadAgentsInformation = () => loadAgentsInfo();
-    $scope.loadFilesInformation  = () => loadFilesInfo();
 
     const loadNodesInfo = async (header) => {
         try {
