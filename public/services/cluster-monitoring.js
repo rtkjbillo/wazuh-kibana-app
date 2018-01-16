@@ -27,6 +27,12 @@ require('ui/modules')
     /** Get a list of all nodes. */
     const getNodes    = () => request('GET','/cluster/nodes',{});
 
+    /** Get one or zero files from one node*/
+    const getFileCount = nodeUrl => request('GET',
+                                       `/cluster/files/${nodeUrl}`,
+                                       { limit:1 }
+                               );
+
     /**
      * If a node is provided, returns the status of that node.
      * Otherwise returns the status of the node where the API is running.
@@ -52,6 +58,6 @@ require('ui/modules')
     }
 
     return {
-        getNodeInfo, getAgents, getNodes, getStatus, getConfig
+        getNodeInfo, getAgents, getNodes, getStatus, getConfig, getFileCount
     };
 });
