@@ -1,10 +1,10 @@
 const beautifier = require('plugins/wazuh/utils/json-beautifier');
-let app = require('ui/modules')
+const app = require('ui/modules')
 .get('app/wazuh', [])
 .controller('clusterController', function ($scope, clusterMonitoring, Notifier,ClusterAgents,ClusterFiles) {
     $scope.clusterAgents = ClusterAgents;
     $scope.clusterFiles  = ClusterFiles;
-    const notifier      = new Notifier();
+    const notifier       = new Notifier();
 
     $scope.selectedNode    = null;
     $scope.clusterTab      = 'agents';
@@ -29,9 +29,6 @@ let app = require('ui/modules')
             case 'files':
                 $scope.clusterFiles.nextPage();    
                 break;
-            case 'status':
-                loadStatusInfo();
-                break;
             case 'configuration':
                 loadConfigInfo();
                 break;
@@ -48,12 +45,14 @@ let app = require('ui/modules')
     })
 
     $scope.switchNode = async item => {
+        if(item.node === 'unknown') return;
         $scope.lookingNode  = true;
         $scope.selectedNode = item;
         $scope.clusterAgents.path = `/cluster/agents/${$scope.selectedNode.node}`;
         $scope.clusterFiles.path  = `/cluster/files/${($scope.selectedNode.url === 'localhost') ? '192.168.1.81' : $scope.selectedNode.url}`;
         $scope.clusterTab   = 'agents';
-        const data = await clusterMonitoring.getFileCount($scope.selectedNode.url);
+        await loadStatusInfo();
+        const data = await clusterMonitoring.getFileCount(($scope.selectedNode.url === 'localhost') ? '192.168.1.81' : $scope.selectedNode.url);
         $scope.hasFiles = (data.data.data && data.data.data.totalItems && data.data.data.totalItems > 0);
         $scope.clusterAgents.nextPage();
     }
@@ -73,15 +72,7 @@ let app = require('ui/modules')
         $scope.error   = error;
     }
 
-    const handleData = data => {
-        $scope.dataShown = data;
-        $scope.raw       = beautifier.prettyPrint(data);
-        $scope.loading   = false;
-        $scope.error     = null;
-        if(!$scope.$$phase) $scope.$digest();
-    }
-
-    const loadNodesInfo = async (header) => {
+    const loadNodesInfo = async header => {
         try {
             const data = await clusterMonitoring.getNodes();
             if(data.data.error) {
