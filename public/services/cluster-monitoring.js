@@ -33,9 +33,9 @@ require('ui/modules')
      * @param {*} node Optional
      */
     const getStatus   = node => {
-        if(node){
+        /*if(node){
             return request('GET','/cluster/status/' + node,{});
-        }
+        }*/
         return request('GET','/cluster/status',{});
     }
 
@@ -45,9 +45,9 @@ require('ui/modules')
      * @param {*} node Optional
      */
     const getConfig   = node => {
-        if(node){
+        /*if(node){
             return request('GET','/cluster/config/' + node,{});
-        }
+        }*/
         return request('GET','/cluster/config',{});
     }
 

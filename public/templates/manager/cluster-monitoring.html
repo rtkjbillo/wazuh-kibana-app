@@ -1,44 +1,46 @@
 <md-content flex ng-controller="clusterController" layout="column" ng-if="submenuNavItem == 'monitoring'" ng-init="lookingNode=false">
-    <div layout="column" layout-align="start stretch">
-        <div layout="row" layout-align="start stretch" ng-show="!lookingNode">
+    <div flex layout="column" layout-align="start stretch">
+        <div flex layout="row" ng-show="!lookingNode">
             <md-card flex>
-                <md-card-title>
-                    <md-card-title-text>
-                        <span class="md-headline">
-                            <a ng-click="lookingNode=false">{{ currentAPI }}</a> /
-                            <a ng-click="lookingNode=false">nodes</a> /</span>
 
-                    </md-card-title-text>
-                </md-card-title>
-                <md-card-content>
+                        <span class="own-breadcrumb md-headline">
+                            <a  class="a-groups" ng-click="lookingNode=false">{{ currentAPI }}</a> >
+                            <a  class="a-groups" ng-click="lookingNode=false">nodes</a>
+                        </span>
 
-                    <div layout="row" class="ownNavBarCluster">
-                        <div flex>
-                            <h4>Node</h4>
-                        </div>
-                        <div flex>
-                            <h4>Status</h4>
-                        </div>
-                        <div flex>
-                            <h4>Agents</h4>
-                        </div>
-                        <div flex>
-                            <h4>Url</h4>
-                        </div>
-                    </div>
+
+                <md-card-content class="groupsFixPadding md-card-content-groups">
+
+                    <md-toolbar layout="row" class="topPaddingSearch md-toolbar-tools-groups">
+                        <span flex>Node</span>
+                        <span flex>Status</span>
+                        <span flex>Agents</span>
+                        <span flex>Url</span>
+                    </md-toolbar>
                     <md-divider></md-divider>
-                    <div layout="row" class="ownNavBarCluster" ng-repeat="item in dataShownHeader.items">
-                        <div flex>
-                            <a ng-if="item.node !== 'unknown'" ng-click="switchNode(item)"><i class="fa fa-eye"></i> {{item.node}}</a>
-                            <span ng-if="item.node === 'unknown'">---</span>
-                        </div>
-                        <div flex>
-                            <i ng-class="(item.status === 'connected') ? 'fa fa-circle ownGreen' : 'fa fa-circle ownRed'"></i> {{(item.status === 'connected')? ' connected' : ' disconnected'}}
-                        </div>
-                        <div flex>{{item.agents}}</div>
-                        <div flex>{{item.url}}</div>
-                    </div>
+
                 </md-card-content>
+                <div flex layout="column" class="md-padding groupsFixPadding" ng-if="!lookingGroup">
+                    <div flex class="ownNavBarCluster clusterScrollable">
+                        <div layout="row" ng-repeat="item in dataShownHeader.items" ng-click="switchNode(item)" class="md-subhead agents-groups-preview agents-preview-table groupsFixPadding">
+                            <div flex>
+                                <span class="md-headline" ng-if="item.node !== 'unknown'">{{item.node}}</span>
+                                <span class="md-headline" ng-if="item.node === 'unknown'">---</span>
+                            </div>
+                            <div flex>
+                                <span class="md-headline">
+                                    <i ng-class="(item.status === 'connected') ? 'fa fa-circle ownGreen' : 'fa fa-circle ownRed'"></i> {{(item.status === 'connected')? ' connected' : ' disconnected'}}</span>
+                            </div>
+                            <div flex>
+                                <span class="md-headline">{{item.agents}}</span>
+                            </div>
+                            <div flex>
+                                <span class="md-headline">{{item.url}}</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
             </md-card>
         </div>
 
@@ -75,10 +77,14 @@
                                 <i class="fa fa-meh-o"></i> This node has no agents registered yet.</p>
                         </div>
                     </div>
-                    <div layout="row"  class="ownNavBarCluster topPaddingSearch" ng-if="dataShown.length > 0 && (clusterTab==='agents' || clusterTab==='files')">
-                        <button class="searchButtonCluster"><i class="fa fa-search"></i></button><input flex id="query" placeholder="Search..." type="text" ng-model="searchTerm" ng-change="applyFilter(searchTerm)" class="searchBarCluster"/>
+                    <div layout="row" class="ownNavBarCluster topPaddingSearch" ng-if="dataShown.length > 0 && (clusterTab==='agents' || clusterTab==='files')">
+                        <button class="searchButtonCluster">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        <input flex id="query" placeholder="Search..." type="text" ng-model="searchTerm" ng-change="applyFilter(searchTerm)"
+                            class="searchBarCluster" />
                     </div>
-     
+
                     <div layout="row" class="ownNavBarCluster" ng-if="dataShown.length > 0 && clusterTab==='agents'">
                         <div flex>
                             <h4>Id</h4>
@@ -95,7 +101,8 @@
 
                     </div>
                     <md-divider ng-if="clusterTab==='agents'"></md-divider>
-                    <div ng-if="!loading && clusterTab==='agents'" ng-class="(dataShown.length > 0) ? 'ownNavBarCluster clusterScrollable' : 'ownNavBarCluster'" when-scrolled="loadAgentsInformation()">
+                    <div ng-if="!loading && clusterTab==='agents'" ng-class="(dataShown.length > 0) ? 'ownNavBarCluster clusterScrollable' : 'ownNavBarCluster'"
+                        when-scrolled="loadAgentsInformation()">
 
                         <div layout="row" class="ownNavBarCluster" ng-if="!loading && dataShown.length > 0 && clusterTab==='agents'" ng-repeat="agent in dataShown">
                             <div flex>{{agent.id}}</div>
@@ -121,7 +128,8 @@
                     </div>
                     <md-divider ng-if="clusterTab==='files'"></md-divider>
                     <div ng-if="clusterTab==='files'" ng-class="(dataShown.length > 0) ? 'ownNavBarCluster clusterScrollable' : 'ownNavBarCluster'">
-                        <div layout="row" class="ownNavBarCluster" ng-if="!loading && dataShown.length > 0 && clusterTab==='files'" ng-repeat="file in dataShown" when-scrolled="loadFilesInformation()">
+                        <div layout="row" class="ownNavBarCluster" ng-if="!loading && dataShown.length > 0 && clusterTab==='files'" ng-repeat="file in dataShown"
+                            when-scrolled="loadFilesInformation()">
                             <div flex>{{file.file}}</div>
                             <div flex>
                                 <i ng-class="(file.status === 'synchronized') ? 'fa fa-circle ownGreen' : 'fa fa-circle ownRed'"></i> {{file.status}}</div>

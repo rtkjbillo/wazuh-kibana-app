@@ -27,7 +27,7 @@ let app = require('ui/modules')
         clusterAgents.reset();
         clusterFiles.reset();
         clusterAgents.path = `/cluster/agents/${$scope.selectedNode.node}`;
-        clusterFiles.path  = `/cluster/files/${$scope.selectedNode.node}`;
+        clusterFiles.path  = `/cluster/files/${$scope.selectedNode.url}`;
     }
 
     $scope.$watch('selectedNode',resetHandlers);
@@ -41,7 +41,7 @@ let app = require('ui/modules')
         $scope.selectedNode = item;
         $scope.clusterTab   = 'agents';
         await loadAgentsInfo();
-        $scope.$digest();
+        if(!$scope.$$phase) $scope.$digest();
     }
 
     $scope.switchClusterTab = tab => {
@@ -81,7 +81,7 @@ let app = require('ui/modules')
         $scope.raw       = beautifier.prettyPrint(data);
         $scope.loading   = false;
         $scope.error     = null;
-        $scope.$digest();
+        if(!$scope.$$phase) $scope.$digest();
     }
 
     const loadAgentsInfo = async () => {
@@ -134,7 +134,7 @@ let app = require('ui/modules')
             }
             $scope.status  = data.data.data;
             $scope.loading = false;
-            $scope.$digest();
+            if(!$scope.$$phase) $scope.$digest();
             return;
         } catch (error) {
             handleError(error);
@@ -150,7 +150,7 @@ let app = require('ui/modules')
             }
             $scope.config  = data.data.data;
             $scope.loading = false;
-            $scope.$digest();
+            if(!$scope.$$phase) $scope.$digest();
             return;
         } catch (error) {
             handleError(error);
@@ -163,6 +163,6 @@ let app = require('ui/modules')
         for(let node of $scope.dataShownHeader.items){
             node.agents = (typeof data.data.data[node.node] !== 'undefined') ? data.data.data[node.node].length : 0;
         }
-        $scope.$digest();
+        if(!$scope.$$phase) $scope.$digest();
     }).catch(console.error);
 });
