@@ -69,6 +69,10 @@
     background-color: #da534f;
 }
 
+.blue {
+	background-color: #3caed2;
+}
+
 .statusBox.green {
     background-color: rgb(49, 196, 113);
 }
@@ -202,9 +206,6 @@
 	height: 100%;
 }
 
-
-/** Cluster tab style */
-
 .ownRed {
     color: red;
 }
@@ -218,28 +219,69 @@
 }
 
 .clusterScrollable {
-    overflow-y: scroll;
-    height: 300px;
+    overflow: auto;
+    height: 400px;
 }
+
+.groupsANone {
+    pointer-events: none;
+}
+
 .searchButtonCluster {
     pointer-events: none;
-    height: 20px;
-    border: 1px solid #00B4CC;
-    background: #00B4CC;
+    height: 24px;
+    border: 1px solid #0079a5 !important;;
+    background: #0079a5 !important;
     text-align: center;
     color: #fff;
-    border-radius: 5px 0px 0px 5px;
     cursor: pointer;
-
 }
 .topPaddingSearch {
     margin-top:10px;
+    margin-bottom: 10px;
 }
+
+.topPaddingSearchNoBottom {
+    margin-top:10px;
+}
+
 .searchBarCluster {
-    border: 1px solid #00B4CC;
     padding: 5px;
-    height: 20px;
-    outline: none;
-    color: #9DBFAF;
-    border-radius: 0px 5px 5px 0px;
+    height: 35px;
+    margin-top: none !important;
+    margin-right: 0px !important;
+}
+
+.jsonbeauty2{
+    min-height: 300px;
+    margin:0px !important;
+}
+
+.faSize13{
+    font-size: 13px !important;
+}
+
+:focus{
+    box-shadow: none !important;
+}
+
+.own-breadcrumb {
+    padding: 15px 15px 0px 20px !important;
+}
+
+.groupsFixPadding {
+    padding-top: 0px !important;
+}
+
+.a-groups {
+    color: #00445a !important;
+}
+
+.groupsButtonNav md-nav-ink-bar {
+    color: #0078a4 !important;
+    background: #0078a4 !important;
+}
+
+.groupsButtonNav .md-button.md-accent {
+    color: #0078a4 !important;
 }
