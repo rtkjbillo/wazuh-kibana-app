@@ -319,7 +319,7 @@ function discoverController(
             ////////////////////////////////////////////////////////////////////////////
             $rootScope.$broadcast('updateVis', $state.query, queryFilter.getFilters());
             $rootScope.$broadcast('fetch');
-            if($location.search().tab != 'configuration') {
+            if($location.search().tab != 'configuration' && $location.search().tab != 'inventory') {
               $rootScope.loadedVisualizations = [];
               $rootScope.rendered = false;
               $rootScope.loadingStatus = "Fetching data...";
@@ -612,7 +612,7 @@ function discoverController(
     ////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////  WAZUH   ///////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    if($location.search().tab != 'configuration') {
+    if($location.search().tab != 'configuration' && $location.search().tab != 'inventory') {
       $rootScope.loadedVisualizations = [];
       $rootScope.rendered = false;
       $rootScope.loadingStatus = "Fetching data...";

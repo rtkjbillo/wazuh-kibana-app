@@ -1,0 +1,132 @@
+<md-content flex layout="column" ng-if="tab === 'inventory'" layout-align="start">
+
+    <div >
+        <div layout="row" class="height-100">
+            <md-card flex>
+                <md-card-content class="text-center">
+                    <div class="metric-value ng-binding font-size-14-pt">BSS-0123456789</div>
+                    <div class="ng-binding">Board serial</div>
+                </md-card-content>
+            </md-card>
+            <md-card  flex="12">
+                <md-card-content class="text-center">
+                    <div class="metric-value ng-binding font-size-14-pt">Intel(R) Core(TM) i7-4700MQ CPU @ 2.40GHz</div>
+                    <div class="ng-binding">CPU name</div>
+                </md-card-content>
+            </md-card>
+            <md-card ng-if="agent.version" flex="12">
+                <md-card-content class="text-center">
+                    <div class="metric-value ng-binding font-size-14-pt">4</div>
+                    <div class="ng-binding">CPU cores</div>
+                </md-card-content>
+            </md-card>
+            <md-card flex="12">
+                <md-card-content class="text-center" ng-click="goGroups(agent)">
+                    <div class="metric-value ng-binding font-size-14-pt" >2394.464</div>
+                    <div class="ng-binding">CPU Mhz</div>
+                </md-card-content>
+            </md-card>
+            <md-card flex>
+                <md-card-content class="text-center" flex="12">
+                    <div class="metric-value ng-binding legend-value-truncate font-size-14-pt">2045956</div>
+                    <div class="ng-binding">RAM</div>
+                </md-card-content>
+            </md-card>
+        </div>
+    </div>
+
+    <div >
+        <div layout="row" class="height-100">
+            <md-card flex>
+                <md-card-content class="text-center">
+                    <div class="metric-value ng-binding font-size-14-pt">Microsoft Windows 10 Education</div>
+                    <div class="ng-binding">OS name</div>
+                </md-card-content>
+            </md-card>
+            <md-card  flex="12">
+                <md-card-content class="text-center">
+                    <div class="metric-value ng-binding font-size-14-pt">10.0</div>
+                    <div class="ng-binding">Version</div>
+                </md-card-content>
+            </md-card>
+            <md-card flex="12">
+                <md-card-content class="text-center">
+                    <div class="metric-value ng-binding font-size-14-pt" >DESKTOP-4JQS3IM</div>
+                    <div class="ng-binding">Hostname</div>
+                </md-card-content>
+            </md-card>
+            <md-card flex>
+                <md-card-content class="text-center">
+                    <div class="metric-value ng-binding legend-value-truncate font-size-14-pt">x86_64</div>
+                    <div class="ng-binding">Architecture</div>
+                </md-card-content>
+            </md-card>
+        </div>
+    </div>
+
+    <!-- View: Panels -->
+    <div flex layout="column" layout-align="start stretch">
+        <md-tabs layout-fill flex md-dynamic-height md-border-bottom>
+            <md-tab layout-fill flex label="Network">
+                <div flex layout="row">
+                <div flex="15" layout="column">
+                    <div flex>
+                        <div layout="column">
+                            <div flex>
+                                <i class="fa fa-random" aria-hidden="true"></i><span class="md-headline">ens33</span>
+                            </div>
+                            <div flex>
+                                <i class="fa fa-wifi" aria-hidden="true"></i><span class="md-headline">Wi-Fi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div flex style="background-color: red;">
+
+
+                        <div layout="column">
+                            <div flex layout="row">
+                                <i class="fa fa-random fa-3x" aria-hidden="true"></i><div class="ng-binding">Name: ens33</span>
+                            </div>
+                            <div flex>
+                                <div class="ng-binding">Type: ethernet</span>
+                            </div>
+                            <div flex>
+                                <div class="ng-binding">State: up</span>
+                            </div>
+                            <div flex>
+                                <div class="ng-binding">MAC: 00:50:56:35:CB:A4</span>
+                            </div>
+                            <div flex>
+                                <div class="ng-binding">MTU: 1500</span>
+                            </div>
+                            <div flex>
+                                <div class="ng-binding">IP4 address: 192.168.1.135</span>
+                            </div>
+                            <div flex>
+                                <div class="ng-binding">IP4 netmask: 255.255.255.0</span>
+                            </div>
+                            <div flex>
+                                <div class="ng-binding">IP4 gateway: 192.168.1.1</span>
+                            </div>                                                                
+                            <div flex>
+                                <div class="ng-binding">IP4 DHCP: enabled</span>
+                            </div> 
+                        </div>
+
+                </div>
+            </div>
+            </md-tab>
+
+            <md-tab label="Programs">
+            </md-tab>
+
+            <md-tab label="Ports">
+            </md-tab>
+
+            <md-tab label="Processes">
+            </md-tab>
+
+        </md-tabs>
+    </div>
+</md-content>
