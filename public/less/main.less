@@ -16,6 +16,7 @@ md-toolbar:not(.md-menu-toolbar) {
     background-color: #f7f7f7
 }
 
+<<<<<<< HEAD
 .md-toolbar-tools {
     font-size: 15px !important;
     font-weight: bold !important;
@@ -44,14 +45,20 @@ md-toolbar:not(.md-menu-toolbar) {
     margin: inherit;
     color: #5a5a5a;
     font-size: 16px;
+=======
+.md-card-content-groups {
+    padding-bottom: 0px !important;
+>>>>>>> 3.1
 }
 
 md-list,
-md-list.odd {
+md-list.odd,
+div.odd {
     background-color: white;
 }
 
-md-list.even {
+md-list.even,
+div.even {
     background-color: #fafafa;
 }
 
@@ -77,7 +84,7 @@ textarea.ng-invalid.ng-dirty,
 textarea.ng-invalid.ng-touched,
 select.ng-invalid.ng-dirty,
 select.ng-invalid.ng-touched {
-    border-color: #3caed2 !important;
+    border-color: rgb(0,121,165) !important;
 }
 
 md-autocomplete input::-webkit-input-placeholder,
@@ -99,7 +106,11 @@ md-chips .md-chips {
 }
 
 md-card.cardHover:hover {
-    background-color: #c2e4ef;
+    background-color: rgb(0,121,165);
+}
+
+md-card.cardHover:hover > md-card-content > div {
+    color: white !important;
 }
 
 md-content._md.layout-row {
@@ -175,4 +186,12 @@ svg:not(:root) {
 md-select.md-default-theme .md-select-value.md-select-placeholder,
 md-select .md-select-value.md-select-placeholder {
     color: black;
+}
+
+.groupsButton:hover {
+    color:white;
+}
+
+.groupsNoMarginTop {
+    margin-top: 0px !important;
 }

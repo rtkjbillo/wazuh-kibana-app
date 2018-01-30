@@ -77,6 +77,94 @@ module.exports = (server, options) => {
         });
     };
 
+    const getTemplate = (req, reply) => {
+        elasticRequest.callWithInternalUser('cat.templates', {})
+        .then((data) => {
+            if (req.params.pattern == "wazuh-alerts-3.x-*" && data.includes("wazuh-alerts-3.*")) {
+                reply({
+                    'statusCode': 200,
+                    'status': true,
+                    'data': `Template found for ${req.params.pattern}`
+                });   
+            } else {
+                let lastChar = req.params.pattern[req.params.pattern.length -1];
+                let array = data.match(/[^\s]+/g);
+                let found = false;
+
+                let pattern = req.params.pattern;
+                if (lastChar === '*') { // Remove last character if it is a '*'
+                    pattern = pattern.slice(0, -1);
+                }
+
+                for (let i = 1; i < array.length; i++) {
+                    if (array[i].includes(pattern) && array[i-1] == `wazuh`) {
+                        found = true;
+                        reply({
+                            'statusCode': 200,
+                            'status': true,
+                            'data': `Template found for ${req.params.pattern}`
+                        });    
+                    }
+                }
+                if (!found) {
+                    reply({
+                        'statusCode': 200,
+                        'status': false,
+                        'data': `No template found for ${req.params.pattern}`
+                    });      
+                }
+            }
+        })
+        .catch((error) => {
+            reply({
+                'statusCode': 500,
+                'error':      10000,
+                'message':    'Could not retrieve templates from Elasticsearch'
+            }).code(500);
+        }); 
+    };
+
+    const checkPattern = (req, reply) => {
+        elasticRequest.callWithInternalUser('search', { 
+            index: '.kibana', 
+            body: {
+                'query': {
+                    'bool': {
+                        'must': {
+                            'match': {
+                                "type": 'index-pattern'
+                            }
+                        }
+                    }
+                }
+            } 
+        })
+        .then((response) => {
+            // Looking for the pattern
+            for (let i = 0, len = response.hits.hits.length; i < len; i++) {
+                if (response.hits.hits[i]._source['index-pattern'].title == req.params.pattern) {
+                    return reply({
+                        'statusCode': 200,
+                        'status': true,
+                        'data': 'Index pattern found'
+                    });
+                }
+            }
+            return reply({
+                'statusCode': 200,
+                'status': false, 
+                'data': 'Index pattern not found'
+            });
+        })
+        .catch((error) => {
+            reply({
+                'statusCode': 500,
+                'error':      10000,
+                'message':    'Something went wrong retrieving index-patterns from Elasticsearch'
+            }).code(500);
+        });
+    };
+
     const getFieldTop = (req, reply) => {
 
         // Top field payload
@@ -181,9 +269,66 @@ module.exports = (server, options) => {
         });
     };
 
+    const getCurrentlyAppliedPattern = (req, reply) => {
+        // We search for the currently applied pattern in the visualizations
+        elasticRequest .callWithInternalUser('search', {
+            index: '.kibana',
+            type:  'doc',
+            q:     `visualization.title:"Wazuh App Overview General Metric alerts"`
+        })
+        .then((data) => {
+            reply({
+                'statusCode': 200,
+                'data':       JSON.parse(data.hits.hits[0]._source.visualization.kibanaSavedObjectMeta.searchSourceJSON).index
+            });
+        })
+        .catch((error) => {
+            reply({
+                'statusCode': 500,
+                'error':      10000,
+                'message':    error
+            }).code(500);
+        });
+    };
+
     module.exports = getConfig;
 
     //Server routes
+
+    /*
+     * GET /api/wazuh-elastic/current-pattern
+     * Returns the currently applied pattern
+     *
+     **/
+    server.route({
+        method: 'GET',
+        path: '/api/wazuh-elastic/current-pattern',
+        handler: getCurrentlyAppliedPattern
+    });
+
+    /*
+     * GET /api/wazuh-elastic/template/{pattern}
+     * Returns whether a correct template is being applied for the index-pattern
+     *
+     **/
+    server.route({
+        method: 'GET',
+        path: '/api/wazuh-elastic/template/{pattern}',
+        handler: getTemplate
+    });
+
+    /*
+     * GET /api/wazuh-elastic/pattern/{pattern}
+     * Returns whether the pattern exists or not
+     *
+     **/
+    server.route({
+        method: 'GET',
+        path: '/api/wazuh-elastic/pattern/{pattern}',
+        handler: checkPattern
+    });
+
+
 
     /*
      * GET /api/wazuh-elastic/top/{cluster}/{field}/{time?}

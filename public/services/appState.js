@@ -1,9 +1,22 @@
 require('ui/modules').get('app/wazuh', []).service('appState', function ($cookies, $window) {
     return {
         getExtensions: () => {
-            return {
+            const data = {
                 extensions: $cookies.getObject('extensions')
             };
+
+            if(typeof data.extensions === 'undefined'){
+                return {
+                    extensions : {
+                        audit     : true,
+                        pci       : true,
+                        oscap     : true,
+                        aws       : false,
+                        virustotal: false
+                    }
+                }
+            }
+            return data;
         },
         setExtensions: extensions => {
             var exp = new Date();
@@ -44,6 +57,15 @@ require('ui/modules').get('app/wazuh', []).service('appState', function ($cookie
             if (API) {
                 $cookies.putObject('API', API, { 'expires': exp});
             }
+        },
+        setUserCode: code => {
+            $cookies.putObject('userCode', code);
+        },
+        getUserCode: () => {
+            return $cookies.getObject('userCode');
+        },
+        removeUserCode: () => {
+            return $cookies.remove('userCode');
         }
     };
 });

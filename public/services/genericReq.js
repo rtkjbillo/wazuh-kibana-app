@@ -1,7 +1,7 @@
 const prepError = require('plugins/wazuh/services/prep-error');
 import chrome from 'ui/chrome';
 
-require('ui/modules').get('app/wazuh', []).service('genericReq', function ($q, $http) {
+require('ui/modules').get('app/wazuh', []).service('genericReq', function ($q, $http, $location, $rootScope, appState,errorHandler) {
 
     const _request = (method, url, payload = null) => {
         let defered = $q.defer();
@@ -13,11 +13,10 @@ require('ui/modules').get('app/wazuh', []).service('genericReq', function ($q, $
             });
             return defered.promise;
         }
-
-        let requestHeaders = { headers: { "Content-Type": 'application/json' }, timeout: 4000 };
+        let requestHeaders = { headers: { "Content-Type": 'application/json' }, timeout: $rootScope.userTimeout || 8000 };
 
         let tmpUrl = chrome.addBasePath(url), tmp = null;
-
+        if(appState.getUserCode()) requestHeaders.headers.code = appState.getUserCode();
         if (method === "GET")    tmp = $http.get(tmpUrl, requestHeaders);
         if (method === "PUT")    tmp = $http.put(tmpUrl, payload, requestHeaders);
         if (method === "POST")   tmp = $http.post(tmpUrl, payload, requestHeaders);
@@ -25,8 +24,8 @@ require('ui/modules').get('app/wazuh', []).service('genericReq', function ($q, $
         
         if(!tmp) {
             defered.reject({
-                'error': -2,
-                'message': 'Error doing a request to Kibana API.'
+                error: -2,
+                message: `Error doing a request to ${tmpUrl}, method: ${method}.`
             });
             return defered.promise;
         }
@@ -64,7 +63,13 @@ require('ui/modules').get('app/wazuh', []).service('genericReq', function ($q, $
 
             _request(method, path, payload)
             .then((data) => defered.resolve(data))
-            .catch((error) => defered.reject(prepError(error)));
+            .catch(error => {
+                if(error.status && error.status === 401){
+                    defered.reject(error);
+                } else { 
+                    defered.reject(prepError(error));
+                }
+            });
 
             return defered.promise;
         }

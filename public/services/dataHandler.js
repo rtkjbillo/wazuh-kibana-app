@@ -16,7 +16,11 @@ app.factory('DataHandler', function ($q, apiReq) {
         }
 
         nextPage () {
-            if (this.busy) return;
+            let deferred = $q.defer();
+            if (this.busy || this.end) {
+                deferred.resolve(true);
+                return;
+            }
             this.busy = true;
             let requestData;
 
@@ -40,9 +44,9 @@ app.factory('DataHandler', function ($q, apiReq) {
             if(this.offset !== 0 && this.offset >= this.totalItems){
                 this.end = true;
                 this.busy = false;
+                deferred.resolve(true);
                 return;
             }
-            let deferred = $q.defer();
             apiReq.request('GET', this.path, requestData)
             .then(data => {
                 if (data.data.data === 0){
@@ -67,7 +71,7 @@ app.factory('DataHandler', function ($q, apiReq) {
                     deferred.resolve(true);
                 }
             })
-            .catch(console.error);
+            .catch(err => this.busy = false);
 
             return deferred.promise;
         }

@@ -1,0 +1,506 @@
+<md-content flex layout="column" ng-if="tab === 'configuration' && configurationError" layout-align="start">
+
+    <!-- <div class='uil-ring-css' ng-show="resultState === 'loading' && tabView === 'panels'"><div></div></div> -->
+
+    <!-- View: Panels -->
+    <div layout="column" layout-align="start stretch">
+        <md-card flex>
+            <md-card-content>
+                <div layout="row">
+                    <div flex>
+                        <h4>
+                            <i class="fa fa-warning"></i> This agent has never been connected, therefore no group has been assigned.</h4>
+                    </div>
+                </div>
+                <div layout="row">
+                    <div flex>
+                        <p>Use the following links to learn about the agent registration process and grouping of agents:
+                        </p>
+                        <ul>
+                            <li>
+                                <a href="https://documentation.wazuh.com/current/user-manual/registering/index.html">https://documentation.wazuh.com/current/user-manual/registering/index.html</a>
+                            </li>
+                            <li>
+                                <a href="https://documentation.wazuh.com/current/user-manual/agents/grouping-agents.html">https://documentation.wazuh.com/current/user-manual/agents/grouping-agents.html</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </md-card-content>
+        </md-card>
+    </div>
+</md-content>
+
+<md-content flex layout="column" ng-if="tab === 'configuration' && !configurationError" layout-align="start">
+    <div flex layout="column" layout-align="start stretch" ng-init="showRaw=false">
+        <div flex layout="row">
+            <md-card flex>
+                <div layout="row" class="md-padding">
+                    <h1 flex="90" ng-show="!load" class="md-title">Current group:
+                        <span ng-click="goGroup()" class="agents-head-5 blue">{{groupName}}<md-tooltip md-direction="bottom">Click to go to the group details</md-tooltip></span>
+                        &nbsp;&ndash;&nbsp;Configuration status:
+                        <span ng-class="isSynchronized ? 'green' : 'red'" class="agents-head-5">{{isSynchronized ? 'SYNCHRONIZED' : 'NOT SYNCHRONIZED'}}</span>
+                    </h1>
+                    <md-switch flex="10" ng-model="toggleRAW">View JSON</md-switch>
+                </div>
+                <md-card-content ng-show="!toggleRAW" ng-init="configTab='fim'">
+                    <md-nav-bar md-selected-nav-item="configTab">
+                        <md-nav-item md-nav-click="switchConfigTab('fim')" name="fim">
+                            File Integrity
+                        </md-nav-item>
+                        <md-nav-item md-nav-click="switchConfigTab('pm')" name="pm">
+                            Policy Monitoring
+                        </md-nav-item>
+                        <md-nav-item md-nav-click="switchConfigTab('log')" name="log">
+                            Log Collection
+                        </md-nav-item>
+                        <md-nav-item md-nav-click="switchConfigTab('scap')" name="scap">
+                            OpenSCAP
+                        </md-nav-item>
+                    </md-nav-bar>
+                </md-card-content>
+
+                <!-- No config -->
+                <div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="!groupConfiguration.config.syscheck && configTab==='fim'">
+                    <div flex>
+                        <h1 class="md-title text-center">No FIM configuration available</h1>
+                        <p class="text-center">There's no FIM group configuration used for this agent.</p>
+                    </div>
+                </div>
+                <div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="!groupConfiguration.config.rootcheck && configTab==='pm'">
+                    <div flex>
+                        <h1 class="md-title text-center">No PM configuration available</h1>
+                        <p class="text-center">There's no PM group configuration used for this agent.</p>
+                    </div>
+                </div>
+                <div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="!groupConfiguration.config['localfile'] && configTab==='log'">
+                    <div flex>
+                        <h1 class="md-title text-center">No Log Collection configuration available</h1>
+                        <p class="text-center">There's no Log Collection group configuration used for this agent.</p>
+                    </div>
+                </div>
+                <div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="!groupConfiguration.config['active-response'] && configTab==='response'">
+                    <div flex>
+                        <h1 class="md-title text-center">No Active Response configuration available</h1>
+                        <p class="text-center">There's no Active Response group configuration used for this agent.</p>
+                    </div>
+                </div>
+                <div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="!groupConfiguration.config['open-scap'] && configTab==='scap'">
+                    <div flex>
+                        <h1 class="md-title text-center">No OpenSCAP configuration available</h1>
+                        <p class="text-center">There's no OpenSCAP group configuration used for this agent.</p>
+                    </div>
+                </div>
+                <!-- End no config -->
+
+                <!-- FIM -->
+                <div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="groupConfiguration.config.syscheck && configTab==='fim' && !toggleRAW">
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-tasks"></i> Main Settings</h4>
+                                <md-divider></md-divider>
+                                <p ng-if="groupConfiguration.config.syscheck.disabled">
+                                    Disabled
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.syscheck.disabled}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.syscheck.frequency">
+                                    Frequency
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.syscheck.frequency}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.syscheck.alert_new_files">
+                                    Alert New Files
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.syscheck.alert_new_files}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.syscheck.skip_nfs">
+                                    Skip NFS
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.syscheck.skip_nfs}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.syscheck.scan_on_start">
+                                    Scan on Start
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.syscheck.scan_on_start}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.syscheck.scan_time">
+                                    Scan Time
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.syscheck.scan_time}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.syscheck.scan_day">
+                                    Scan Day
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.syscheck.scan_day}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.syscheck.auto_ignore">
+                                    Auto Ignore
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.syscheck.auto_ignore}}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </md-card>
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-clone"></i> No diff</h4>
+                                <md-divider></md-divider>
+                                <div ng-repeat="item in groupConfiguration.config.syscheck.nodiff">
+                                    <p ng-if="!item.type">
+                                        File
+                                        <span class="md-secondary pull-right">{{item}}</span>
+                                    </p>
+                                    <p ng-if="item.type">
+                                        File
+                                        <span class="md-secondary pull-right">{{item.item}}</span>
+                                    </p>
+                                    <p ng-if="item.type">
+                                        Type
+                                        <span class="md-secondary pull-right">{{item.type}}</span>
+                                    </p>
+                                    <md-divider ng-if="!$last"></md-divider>
+                                </div>
+                            </div>
+                        </div>
+                    </md-card>
+                </div>
+                <div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="groupConfiguration.config.syscheck && configTab==='fim' && !toggleRAW">
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-file-o"></i> Monitored files</h4>
+                                <md-divider></md-divider>
+                                <div ng-repeat="item in groupConfiguration.config.syscheck.directories">
+                                    <p ng-if="item.path">
+                                        Path
+                                        <span class="md-secondary pull-right">{{item.path}}</span>
+                                    </p>
+                                    <p ng-if="item.check_all">
+                                        Check All
+                                        <span class="md-secondary pull-right">{{item.check_all}}</span>
+                                    </p>
+                                    <p ng-if="item.realtime">
+                                        Realtime
+                                        <span class="md-secondary pull-right">{{item.realtime}}</span>
+                                    </p>
+                                    <p ng-if="item.report_changes">
+                                        Report Changes
+                                        <span class="md-secondary pull-right">{{item.report_changes}}</span>
+                                    </p>
+                                    <md-divider ng-if="!$last"></md-divider>
+                                </div>
+                            </div>
+                        </div>
+                    </md-card>
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-file"></i> Ignored files</h4>
+                                <md-divider></md-divider>
+                                <div ng-repeat="item in groupConfiguration.config.syscheck.ignore">
+                                    <p ng-if="!item.type">
+                                        File
+                                        <span class="md-secondary pull-right">{{item}}</span>
+                                    </p>
+                                    <p ng-if="item.type">
+                                        File
+                                        <span class="md-secondary pull-right">{{item.item}}</span>
+                                    </p>
+                                    <p ng-if="item.type">
+                                        Type
+                                        <span class="md-secondary pull-right">{{item.type}}</span>
+                                    </p>
+                                    <md-divider ng-if="!$last"></md-divider>
+                                </div>
+                            </div>
+                        </div>
+                    </md-card>
+
+                </div>
+                <!-- End FIM -->
+
+                <!-- PM -->
+                <div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="groupConfiguration.config.rootcheck && configTab==='pm' && !toggleRAW">
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-tasks"></i> Main Settings</h4>
+                                <md-divider></md-divider>
+                                <p ng-if="groupConfiguration.config.rootcheck.disabled">
+                                    Disabled
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.disabled}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.base_directory">
+                                    Base directory
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.base_directory}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.frequency">
+                                    Frequency
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.frequency}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.scanall">
+                                    Scan All Files
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.scanall}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.skip_nfs">
+                                    Skip NFS
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.skip_nfs}}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </md-card>
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-check"></i> Checks</h4>
+                                <md-divider></md-divider>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_unixaudit">
+                                    Check UNIX Audit
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_unixaudit}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_dev">
+                                    Check DEV
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_dev}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_files">
+                                    Check Files
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_files}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_if">
+                                    Check IF
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_if}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_pids">
+                                    Check PIDs
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_pids}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_policy">
+                                    Check Policy
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_policy}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_ports">
+                                    Check Ports
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_ports}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_sys">
+                                    Check SYS
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_sys}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_trojans">
+                                    Check Trojans
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_trojans}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_unixaudit">
+                                    Check UNIX Audit
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_unixaudit}}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </md-card>
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-windows"></i> Windows Settings</h4>
+                                <md-divider></md-divider>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_winaudit">
+                                    Check Windows Audit
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_winaudit}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_winapps">
+                                    Check Windows Apps
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_winapps}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.check_winmalware">
+                                    Check Windows Malware
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.check_winmalware}}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </md-card>
+                </div>
+                <div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="groupConfiguration.config.rootcheck && configTab==='pm' && !toggleRAW">
+
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-shield"></i> Rootkit</h4>
+                                <md-divider></md-divider>
+                                <p ng-if="groupConfiguration.config.rootcheck.rootkit_trojans">
+                                    Trojans Path
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.rootkit_trojans[0]}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config.rootcheck.rootkit_files">
+                                    Files Path
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config.rootcheck.rootkit_files[0]}}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </md-card>
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-file-o"></i> System Audit Files</h4>
+                                <md-divider></md-divider>
+                                <div ng-repeat="item in groupConfiguration.config.rootcheck.system_audit">
+                                    <p>{{item}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </md-card>
+                </div>
+                <div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="groupConfiguration.config.rootcheck && configTab==='pm' && !toggleRAW">
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-eye"></i> Windows Audit Files</h4>
+                                <md-divider></md-divider>
+                                <div ng-repeat="item in groupConfiguration.config.rootcheck.windows_audit">
+                                    <p>{{item}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </md-card>
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-folder-o"></i> Windows Apps Files</h4>
+                                <md-divider></md-divider>
+                                <div ng-repeat="item in groupConfiguration.config.rootcheck.windows_apps">
+                                    <p>{{item}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </md-card>
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-user-secret"></i> Windows Malware Files</h4>
+                                <md-divider></md-divider>
+                                <div ng-repeat="item in groupConfiguration.config.rootcheck.windows_malware">
+                                    <p>{{item}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </md-card>
+                </div>
+                <!-- End PM -->
+
+                <!-- Log -->
+                <div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="groupConfiguration.config['localfile'] && configTab==='log' && !toggleRAW">
+                    <md-card flex>
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-reorder"></i> Log Files</h4>
+                                <md-divider></md-divider>
+                                <div layout="column" ng-repeat="item in groupConfiguration.config['localfile']" class="md-subhead agents-groups-preview  groupsFixPadding">
+                                    <div layout="row">
+                                        <span flex ng-if="item.location" class="md-headline">{{item.location}}</span>
+                                        <span flex ng-if="item.log_format" class="md-headline">{{item.log_format}}</span>
+                                        <span flex ng-if="item.frequency" class="md-headline">{{item.frequency}}</span>
+                                        <span flex ng-if="item.query" class="md-headline">{{item.query}}</span>
+                                        <span flex ng-if="item.command" class="md-headline">{{item.command}}</span>
+                                        <span flex ng-if="item.alias" class="md-headline">{{item.alias}}</span>
+
+                                        <span flex ng-if="item.label" class="md-headline">{{item.label}}</span>
+                                    </div>
+                                    <md-divider ng-if="!$last"></md-divider>
+                                </div>
+                            </div>
+                        </div>
+                    </md-card>
+                </div>
+                <!-- End Log -->
+
+                <!-- OpenScap -->
+                <div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="groupConfiguration.config['open-scap'] && configTab==='scap' && !toggleRAW">
+                    <md-card flex="40">
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-tasks"></i> Main Settings
+                                </h4>
+                                <md-divider></md-divider>
+                                <p ng-if="groupConfiguration.config['open-scap'].disabled">
+                                    OpenSCAP disabled
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config['open-scap'].disabled}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config['open-scap'].interval">
+                                    Interval
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config['open-scap'].interval}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config['open-scap']['scan-on-start']">
+                                    Scan on start
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config['open-scap']['scan-on-start']}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config['open-scap'].ciscat_path">
+                                    CIS-CAT Path
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config['open-scap'].ciscat_path}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config['open-scap'].java_path">
+                                    Java Path
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config['open-scap'].java_path}}</span>
+                                </p>
+                                <p ng-if="groupConfiguration.config['open-scap'].timeout">
+                                    Timeout
+                                    <span class="md-secondary pull-right">{{groupConfiguration.config['open-scap'].timeout}}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </md-card>
+                    <md-card flex="40">
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-reorder"></i> Content
+                                </h4>
+                                <md-divider></md-divider>
+                                <div ng-repeat="item in groupConfiguration.config['open-scap'].content">
+                                    <p ng-if="item.path">
+                                        Path
+                                        <span class="md-secondary pull-right">{{item.path}}</span>
+                                    </p>
+                                    <p ng-if="item.type">
+                                        Type
+                                        <span class="md-secondary pull-right">{{item.type}}</span>
+                                    </p>
+                                    <md-divider ng-if="!$last"></md-divider>
+                                </div>
+                            </div>
+                        </div>
+                    </md-card>
+                </div>
+                <!-- End OpenScap -->
+
+                <!-- Active Response -->
+                <!--<div layout="row" class="ownNavBarCluster topPaddingSearchNoBottom" ng-show="groupConfiguration.config['active-response'] && configTab==='response' && !toggleRAW">
+                    <md-card flex="50">
+                        <div layout="row" class="md-padding">
+                            <div flex>
+                                <h4>
+                                    <i class="fa fa-tasks"></i> Main Settings
+                                </h4>
+                                <md-divider></md-divider>
+
+                            </div>
+                        </div>
+                    </md-card>
+                </div>-->
+                <!-- End Active Response -->
+
+                <!-- JSON -->
+                <div layout="row" flex class="md-padding height-300 ownNavBarCluster topPaddingSearchNoBottom" ng-show="toggleRAW">
+                    <pre flex layout-fill class="json-beautifier"><code dynamic="rawJSON"></code></pre>
+                </div>
+                <!-- End JSON -->
+            </md-card>
+        </div>
+    </div>
+</md-content>
