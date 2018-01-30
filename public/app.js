@@ -44,11 +44,8 @@ require('plugins/wazuh/services/dataHandler.js');
 require('plugins/wazuh/services/appState.js');
 require('plugins/wazuh/services/testAPI.js');
 require('plugins/wazuh/services/implicitFilters.js');
-<<<<<<< HEAD
 require('plugins/wazuh/services/cluster-monitoring.js');
-=======
 require('plugins/wazuh/services/patternHandler.js');
->>>>>>> 3.1
 
 // Set up routes and views
 require('plugins/wazuh/services/routes.js');
