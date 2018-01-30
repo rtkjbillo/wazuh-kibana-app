@@ -25,8 +25,8 @@ module.exports = (server, options) => {
     try {
         const configurationFile = yml.load(fs.readFileSync(path.join(__dirname,'../config.yml'), {encoding: 'utf-8'}));
 
-        global.loginEnabled = typeof configurationFile['login.enabled'] !== 'undefined' ? configurationFile['login.enabled'] : false;
-        pattern             = typeof configurationFile.pattern          !== 'undefined' ? configurationFile.pattern          : 'wazuh-alerts-3.x-*';
+        global.loginEnabled = (configurationFile && typeof configurationFile['login.enabled'] !== 'undefined') ? configurationFile['login.enabled'] : false;
+        pattern             = (configurationFile && typeof configurationFile.pattern          !== 'undefined') ? configurationFile.pattern          : 'wazuh-alerts-3.x-*';
         
         packageJSON = require('../package.json');
     } catch (e) {
