@@ -27,61 +27,33 @@ require('ui/modules')
     /** Get a list of all nodes. */
     const getNodes    = () => request('GET','/cluster/nodes',{});
 
-    /** Get one or zero files from one node*/
-    const getFileCount = nodeUrl => request('GET',
-                                       `/cluster/files/${nodeUrl}`,
-                                       { limit:1 }
-                               );
 
-    /** Get total number of synchronized files from one node */
-    const getSynchFilesCount = nodeUrl => {
-        return {
-                data: {
-                    data: {
-                        totalItems: 400
-                    }
-                }
-            }
-        
-    };
-
-    /** Get total number of files from one node */
-    const getTotalFilesCount = nodeUrl => {
-        return  {
-                data: {
-                    data: {
-                        totalItems: 400
-                    }
-                }
-            }
-        
-    };
+    const getTotalFileCount = node => request('GET',`/cluster/files/${node}`,{count:1});
+    const getSynchronizedFileCount = node => request('GET',`/cluster/files/${node}`,{status:'synchronized',count:1});
 
     /**
      * If a node is provided, returns the status of that node.
      * Otherwise returns the status of the node where the API is running.
-     * @param {*} node Optional
+     * @param {*} node 
      */
-    const getStatus   = node => {
-        /*if(node){
-            return request('GET','/cluster/status/' + node,{});
-        }*/
-        return request('GET','/cluster/status',{});
-    }
+    const getStatus = node => request('GET','/cluster/status',{node_id: node});
+    
 
     /**
      * If a node is provided, returns the configuration of that node.
      * Otherwise returns the configuration of the node where the API is running.
-     * @param {*} node Optional
+     * @param {*} node 
      */
-    const getConfig   = node => {
-        /*if(node){
-            return request('GET','/cluster/config/' + node,{});
-        }*/
-        return request('GET','/cluster/config',{});
-    }
+    const getConfig = node => request('GET','/cluster/config',{node_id: node});
+    
 
     return {
-        getNodeInfo, getAgents, getNodes, getStatus, getConfig, getFileCount, getSynchFilesCount , getTotalFilesCount
+        getNodeInfo, 
+        getAgents, 
+        getNodes, 
+        getStatus, 
+        getConfig, 
+        getTotalFileCount , 
+        getSynchronizedFileCount
     };
 });

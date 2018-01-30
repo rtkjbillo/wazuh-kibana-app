@@ -45,16 +45,22 @@ const app = require('ui/modules')
     })
 
     $scope.switchNode = async item => {
-        if(item.node === 'unknown') return;
-        $scope.lookingNode  = true;
-        $scope.selectedNode = item;
-        $scope.clusterAgents.path = `/cluster/agents/${$scope.selectedNode.node}`;
-        $scope.clusterFiles.path  = `/cluster/files/${($scope.selectedNode.url === 'localhost') ? '192.168.1.81' : $scope.selectedNode.url}`;
-        $scope.clusterTab   = 'agents';
-        await loadStatusInfo();
-        const data = await clusterMonitoring.getFileCount(($scope.selectedNode.url === 'localhost') ? '192.168.1.81' : $scope.selectedNode.url);
-        $scope.hasFiles = (data.data.data && data.data.data.totalItems && data.data.data.totalItems > 0);
-        $scope.clusterAgents.nextPage();
+        try{
+            if(item.node === 'unknown') return;
+            $scope.lookingNode  = true;
+            $scope.selectedNode = item;
+            $scope.clusterAgents.path = `/cluster/agents/${item.node}`;
+            $scope.clusterFiles.path  = `/cluster/files/${item.node}`;
+            $scope.clusterTab   = 'agents';
+            await loadStatusInfo();
+            const data = await clusterMonitoring.getTotalFileCount(item.node);
+            $scope.hasFiles = (data.data.data && data.data.data.totalItems && data.data.data.totalItems > 0);
+            await $scope.clusterAgents.nextPage();
+            if(!$scope.$$phase) $scope.$digest();
+            return;
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     $scope.switchClusterTab = tab => {
@@ -89,6 +95,7 @@ const app = require('ui/modules')
             $scope.dataShownHeader = data.data.data;
             $scope.loading         = false;
             $scope.error           = null;
+            if(!$scope.$$phase) $scope.$digest();
             return;
         } catch (error) {
             handleError(error);
@@ -118,7 +125,7 @@ const app = require('ui/modules')
             if(data.data.error) {
                 return handleError(data.data.error);
             }
-            $scope.config  = data.data.data;
+            $scope.config  = data.data.data[$scope.selectedNode.node].data;
             $scope.loading = false;
             if(!$scope.$$phase) $scope.$digest();
             return;
@@ -145,11 +152,12 @@ const app = require('ui/modules')
             const data = await clusterMonitoring.getAgents();
             for(let node of $scope.dataShownHeader.items){
                 node.agents = (typeof data.data.data[node.node] !== 'undefined') ? data.data.data[node.node].length : 0;
-                const filesData = await Promise.all([clusterMonitoring.getSynchFilesCount(node.url),clusterMonitoring.getTotalFilesCount(node.url)]);
+                const filesData = await Promise.all([clusterMonitoring.getSynchronizedFileCount(node.node),clusterMonitoring.getTotalFileCount(node.node)]);
                 node.synchFiles = filesData[0].data.data.totalItems;
                 node.totalFiles = filesData[1].data.data.totalItems;
             }
             if(!$scope.$$phase) $scope.$digest();
+            return;
         } catch(error){
             notifier.error('Unexpected error loading controller.' + error.message);
         }
