@@ -87,11 +87,14 @@
         <div flex layout="row" layout-align="start stretch" ng-show="lookingNode">
             <md-card flex>
                 <div layout="row">
-                    <h4 class="own-breadcrumb md-headline">{{ selectedNode.node }} </h4><span flex></span>
+                    <span class="own-breadcrumb md-headline">{{ currentAPI }} > {{ selectedNode.node }} </span><span flex></span>
                     <span ng-if="status.enabled==='yes'" class="pull-right own-breadcrumb md-headline">
                         <i ng-class="(status.running === 'yes') ? 'fa fa-circle ownGreen' : 'fa fa-circle ownRed'" class="fa fa-circle ownGreen"></i> Running </span>
                     <span ng-if="status.running==='no'" class="pull-right own-breadcrumb md-headline">
                         <i ng-class="(status.enabled === 'yes') ? 'fa fa-circle ownGreen' : 'fa fa-circle ownRed'" class="fa fa-circle ownGreen"></i> Enabled </span>
+                    <md-button class="no-margin-btn buttonMonitoring md-primary md-whiteframe-z1 buttonMenu monitoring-log-buttonplay" ng-click="lookingNode=false">
+                        <i class="fa fa-reply" aria-hidden="true"></i> Go back
+                    </md-button>
                 </div>
                 <md-card-content>
                     <div layout="row">
@@ -235,9 +238,9 @@
                                     </div>
                                 </div>
                 
-                                <div flex layout="row" class="md-padding" ng-if="!loading && clusterTab==='configuration'">
+                                <div flex layout="column" class="md-padding" ng-if="!loading && clusterTab==='configuration'">
                                     <div flex layout="row">
-                                        <div flex="30">
+                                        <div flex="45">
                                             <h4>
                                                 <i class="fa fa-cubes"></i> Overview</h4>
   
@@ -254,7 +257,7 @@
                                             </p>
                                         </div>
                                         <div flex></div>
-                                        <div flex="30">
+                                        <div flex="45">
                                             <h4>
                                                 <i class="fa fa-tasks"></i> Settings</h4>
 
@@ -270,8 +273,9 @@
                                                 <span class="md-secondary pull-right">{{config.interval}}</span>
                                             </p>
                                         </div>
-                                        <div flex></div>
-                                        <div flex="30">
+                                        </div>
+                                        <div flex layout="row">
+                                        <div flex="45">
                                             <h4>
                                                 <i class="fa fa-feed"></i> Network</h4>
              
@@ -287,6 +291,7 @@
                                                 <span class="md-secondary pull-right">{{config.nodes.length}}</span>
                                             </p>
                                         </div>
+       
                                     </div>
                                 </div>
                         </div>
