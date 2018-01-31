@@ -1,10 +1,9 @@
-const beautifier = require('plugins/wazuh/utils/json-beautifier');
-const app = require('ui/modules')
-.get('app/wazuh', [])
-.controller('clusterController', function ($scope, $rootScope, $location, clusterMonitoring, Notifier,ClusterAgents,ClusterFiles) {
+
+const app = require('ui/modules').get('app/wazuh', []);
+
+app.controller('clusterController', function ($scope, $rootScope, $location, clusterMonitoring, ClusterAgents,ClusterFiles,errorHandlerService) {
     $scope.clusterAgents = ClusterAgents;
     $scope.clusterFiles  = ClusterFiles;
-    const notifier       = new Notifier();
 
     $scope.selectedNode    = null;
     $scope.clusterTab      = 'agents';
@@ -12,8 +11,6 @@ const app = require('ui/modules')
     $scope.config          = null;
     $scope.dataShownHeader = null;
     $scope.loading         = true;
-    $scope.error           = null;
-    $scope.raw             = null;
     $scope.lookingNode     = false;
 
     const resetHandlers = () => {
@@ -67,7 +64,6 @@ const app = require('ui/modules')
         resetHandlers();
         $scope.showRaw    = false;
         $scope.dataShown  = [];
-        $scope.raw        = 'Loading';
         $scope.clusterTab = tab;
     }
 
@@ -79,22 +75,22 @@ const app = require('ui/modules')
     };
 
     const handleError = error => {
-        notifier.error(error.message || error);
-        $scope.raw     = beautifier.prettyPrint(error.message || error);
+        errorHandlerService.error(error);
         $scope.loading = false;
-        $scope.error   = error;
+        if(!$rootScope.$$phase) $rootScope.$digest();
     }
 
     const loadNodesInfo = async header => {
         try {
             const data = await clusterMonitoring.getNodes();
             if(data.data.error) {
-                return handleError(data.data.error);
+                errorHandlerService.error(data.data.error);
+                if(!$rootScope.$$phase) $rootScope.$digest();
+                return;
             }
             $scope.selectedNode    = data.data.data.items[0];
             $scope.dataShownHeader = data.data.data;
             $scope.loading         = false;
-            $scope.error           = null;
             if(!$scope.$$phase) $scope.$digest();
             return;
         } catch (error) {
@@ -107,7 +103,9 @@ const app = require('ui/modules')
             $scope.loading = true;
             const data     = await clusterMonitoring.getStatus($scope.selectedNode.node);
             if(data.data.error) {
-                return handleError(data.data.error);
+                errorHandlerService.error(data.data.error);
+                if(!$rootScope.$$phase) $rootScope.$digest();
+                return;
             }
             $scope.status  = data.data.data;
             $scope.loading = false;
@@ -123,7 +121,9 @@ const app = require('ui/modules')
             $scope.loading = true;
             const data    = await clusterMonitoring.getConfig($scope.selectedNode.node);
             if(data.data.error) {
-                return handleError(data.data.error);
+                errorHandlerService.error(data.data.error);
+                if(!$rootScope.$$phase) $rootScope.$digest();
+                return;
             }
             $scope.config  = data.data.data[$scope.selectedNode.node].data;
             $scope.loading = false;
@@ -159,7 +159,8 @@ const app = require('ui/modules')
             if(!$scope.$$phase) $scope.$digest();
             return;
         } catch(error){
-            notifier.error('Unexpected error loading controller.' + error.message);
+            errorHandlerService.error(error);
+            if(!$rootScope.$$phase) $rootScope.$digest();
         }
     }
 
