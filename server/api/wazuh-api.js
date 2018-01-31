@@ -79,7 +79,7 @@ module.exports = (server, options) => {
                                         wapi_config.cluster_info = {};
                                         wapi_config.cluster_info.status = 'enabled';
                                         wapi_config.cluster_info.manager = managerName;
-                                        wapi_config.cluster_info.node = response.body.data.node;
+                                        wapi_config.cluster_info.node = response.body.data.node_id;
                                         wapi_config.cluster_info.cluster = response.body.data.cluster;
                                         reply({
                                             'statusCode': 200,
@@ -208,7 +208,7 @@ module.exports = (server, options) => {
                                         if (!response.body.error) {
                                             reply({
                                                 "manager": managerName,
-                                                "node":    response.body.data.node,
+                                                "node":    response.body.data.node_id,
                                                 "cluster": response.body.data.cluster,
                                                 "status": 'enabled'
                                             });
@@ -298,7 +298,7 @@ module.exports = (server, options) => {
         });
     };
 
-    const makeRequest = (method, path, data, id, reply) => {
+    const makeRequest = (method, path, data, id, reply,node) => {
         getConfig(id, (wapi_config) => {
             if (wapi_config.error_code > 1) {
                 //Can not connect to elasticsearch
@@ -322,7 +322,7 @@ module.exports = (server, options) => {
                 data = {};
             }
 
-            var options = {
+            const options = {
                 headers: {
                     'wazuh-app-version': packageInfo.version
                 },
@@ -331,18 +331,39 @@ module.exports = (server, options) => {
                 rejectUnauthorized: !wapi_config.insecure
             };
 
-            let fullUrl = getPath(wapi_config) + path;
+            const fullUrl = getPath(wapi_config) + path;
 
             needle.request(method, fullUrl, data, options, (error, response) => {
-                let errorData = errorControl(error, response);
+                const errorData = errorControl(error, response);
                 if (errorData.isError) {
                     reply(errorData.body).code(500);
-                } else {
+                } else {                    
+                    if(node){
+                        handleClusterResponse(path,response);
+                    }
                     reply(response.body);
                 }
             });
         });
     };
+
+    const handleClusterResponse = (path,response) => {
+        if(!path.includes('/manager')) return;
+        console.log('------------handleClusterResponse---------')
+        console.log(path);
+        console.log(response.body);
+        console.log('------------------------------------------')
+        if((path.includes('/manager/status') || path.includes('/manager/info')) && response.body.data && response.body.data.items && Array.isArray(response.body.data.items) && response.body.data.items.length > 0){
+            response.body.data = response.body.data.items[0];
+            console.log(response.body.data);
+        }
+    }
+
+    const parseClusterRequest = (req,node) => {
+        if(req.payload && req.payload.path && req.payload.path === '/manager/status'){
+            req.payload.path += '/' + node;
+        }
+    }
 
     const requestApi = (req, reply) => {
         if(!protectedRoute(req)) return reply(genericErrorBuilder(401,7,'Session expired.')).code(401);
@@ -359,7 +380,20 @@ module.exports = (server, options) => {
                 'message':    'Missing param: Path'
             }).code(400);
         } else {
-            makeRequest(req.payload.method, req.payload.path, req.payload.body, req.payload.id, reply);
+            console.log('-----------------------------------------');
+            console.log('Trying to request: ' + req.payload.path);
+            console.log('Incoming node: ' + req.headers.node);
+            console.log('Incoming isCluster: ' + req.headers.iscluster);
+
+            let node = false;
+            if(req.headers.iscluster === 'enabled') {
+                node = req.headers.node;
+                parseClusterRequest(req,node);
+            }
+            console.log('Outcoming request: ' + req.payload.path);
+            console.log('Outcoming node: ' + node);
+            console.log('-----------------------------------------');
+            makeRequest(req.payload.method, req.payload.path, req.payload.body, req.payload.id, reply, node);
         }
     };
 

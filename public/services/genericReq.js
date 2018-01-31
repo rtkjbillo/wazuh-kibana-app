@@ -14,7 +14,11 @@ require('ui/modules').get('app/wazuh', []).service('genericReq', function ($q, $
             return defered.promise;
         }
         let requestHeaders = { headers: { "Content-Type": 'application/json' }, timeout: $rootScope.userTimeout || 8000 };
-
+        const clusterInfo = appState.getClusterInfo();
+        if(clusterInfo && clusterInfo.status === 'enabled'){
+            requestHeaders.headers.iscluster = 'enabled';
+            requestHeaders.headers.node      = clusterInfo.node;
+        }
         let tmpUrl = chrome.addBasePath(url), tmp = null;
         if(appState.getUserCode()) requestHeaders.headers.code = appState.getUserCode();
         if (method === "GET")    tmp = $http.get(tmpUrl, requestHeaders);

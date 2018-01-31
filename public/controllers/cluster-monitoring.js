@@ -1,7 +1,7 @@
 
 const app = require('ui/modules').get('app/wazuh', []);
 
-app.controller('clusterController', function ($scope, $rootScope, $location, clusterMonitoring, ClusterAgents,ClusterFiles,errorHandlerService) {
+app.controller('clusterController', function ($scope, $rootScope, $location, clusterMonitoring, ClusterAgents,ClusterFiles,errorHandler) {
     $scope.clusterAgents = ClusterAgents;
     $scope.clusterFiles  = ClusterFiles;
 
@@ -75,7 +75,7 @@ app.controller('clusterController', function ($scope, $rootScope, $location, clu
     };
 
     const handleError = error => {
-        errorHandlerService.error(error);
+        errorHandler.error(error);
         $scope.loading = false;
         if(!$rootScope.$$phase) $rootScope.$digest();
     }
@@ -84,7 +84,7 @@ app.controller('clusterController', function ($scope, $rootScope, $location, clu
         try {
             const data = await clusterMonitoring.getNodes();
             if(data.data.error) {
-                errorHandlerService.error(data.data.error);
+                errorHandler.error(data.data.error);
                 if(!$rootScope.$$phase) $rootScope.$digest();
                 return;
             }
@@ -103,7 +103,7 @@ app.controller('clusterController', function ($scope, $rootScope, $location, clu
             $scope.loading = true;
             const data     = await clusterMonitoring.getStatus($scope.selectedNode.node);
             if(data.data.error) {
-                errorHandlerService.error(data.data.error);
+                errorHandler.error(data.data.error);
                 if(!$rootScope.$$phase) $rootScope.$digest();
                 return;
             }
@@ -121,7 +121,7 @@ app.controller('clusterController', function ($scope, $rootScope, $location, clu
             $scope.loading = true;
             const data    = await clusterMonitoring.getConfig($scope.selectedNode.node);
             if(data.data.error) {
-                errorHandlerService.error(data.data.error);
+                errorHandler.error(data.data.error);
                 if(!$rootScope.$$phase) $rootScope.$digest();
                 return;
             }
@@ -159,7 +159,7 @@ app.controller('clusterController', function ($scope, $rootScope, $location, clu
             if(!$scope.$$phase) $scope.$digest();
             return;
         } catch(error){
-            errorHandlerService.error(error);
+            errorHandler.error(error);
             if(!$rootScope.$$phase) $rootScope.$digest();
         }
     }

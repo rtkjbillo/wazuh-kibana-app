@@ -437,7 +437,7 @@ module.exports = (server, options) => {
                                         wapi_config.cluster_info = {};
                                         wapi_config.cluster_info.status = 'enabled';
                                         wapi_config.cluster_info.manager = wapi_config.manager;
-                                        wapi_config.cluster_info.node = response.body.data.node;
+                                        wapi_config.cluster_info.node = response.body.data.node_id;
                                         wapi_config.cluster_info.cluster = response.body.data.cluster;
                                     } else if (response.body.error){
                                         server.log([blueWazuh, 'reindex', 'error'], 'Could not get cluster/node information for ', wapi_config.manager);
@@ -465,7 +465,7 @@ module.exports = (server, options) => {
                                         "manager": wapi_config.manager,
                                         "cluster_info" : {
                                             "manager" : wapi_config.manager,
-                                            "node" : wapi_config.cluster_info.node,
+                                            "node" : wapi_config.cluster_info.node_id,
                                             "cluster" : wapi_config.cluster_info.cluster,
                                             "status" : wapi_config.cluster_info.status
                                         },
