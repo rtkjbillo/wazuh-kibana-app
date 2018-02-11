@@ -39,7 +39,7 @@
       <filter-bar-w
         state="state"
         index-patterns="[indexPattern]"
-        ng-if="['lucene', 'kql'].includes(state.query.language)"
+        ng-if="state.query.language === 'lucene'"
       ></filter-bar-w>
     </div>
     <div class="row" ng-show="tabView === 'discover'">
@@ -65,10 +65,7 @@
           <!-- loading -->
           <div ng-show="resultState === 'loading'">
             <div class="discover-overlay">
-              <div class="euiTitle">
-                <h2>Searching</h2>
-              </div>
-              <div class="euiSpacer euiSpacer--m"></div>
+              <h2>Searching</h2>
               <div ng-show="fetchStatus">{{fetchStatus.complete}}/{{fetchStatus.total}}</div>
             </div>
           </div>
@@ -121,7 +118,7 @@
                  vis-data="visData"
                  show-spy-panel="true"
                  search-source="searchSource"
-                 style="height: 200px"
+                 class="kbn-dis-height-200"
                 >
               </visualization>
             </section>
@@ -139,7 +136,7 @@
                 data-title="{{opts.savedSearch.lastSavedTitle}}"
                 data-description="{{opts.savedSearch.description}}"
                 minimum-visible-rows="minimumVisibleRows"
-                render-complete
+                render-counter
                 on-add-column="addColumn"
                 on-change-sort-order="setSortOrder"
                 on-move-column="moveColumn"
