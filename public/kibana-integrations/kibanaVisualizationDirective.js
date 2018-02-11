@@ -46,8 +46,8 @@ var app = require('ui/modules').get('apps/webinar_app', [])
 
                                 if ($scope.specificTimeRange) {
                                     const timeRange = {
-                                        from: 'now-1d/d',
-                                        to: 'now'
+                                        min: 'now-1d/d',
+                                        max: 'now'
                                     };
                                     params = {timeRange: timeRange}
                                 }
